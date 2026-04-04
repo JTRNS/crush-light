@@ -59,7 +59,7 @@ func send(event string, props ...any) {
 	if event == "" {
 		return
 	}
-	_ = pairsToProps(props...).Merge(cloneBaseProps())
+	validateProps(props...)
 }
 
 // Error records an internal error event for future local handling.
@@ -67,7 +67,7 @@ func Error(errToLog any, props ...any) {
 	if errToLog == nil {
 		return
 	}
-	_ = pairsToProps(props...).Merge(cloneBaseProps())
+	validateProps(props...)
 }
 
 func Flush() {}
@@ -118,6 +118,10 @@ func setBaseProp(key string, value any) {
 	basePropsMu.Lock()
 	defer basePropsMu.Unlock()
 	baseProps[key] = value
+}
+
+func validateProps(props ...any) {
+	_ = pairsToProps(props...).Merge(cloneBaseProps())
 }
 
 func isEven(n int) bool {

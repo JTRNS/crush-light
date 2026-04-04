@@ -49,7 +49,7 @@ func TestPairsToProps(t *testing.T) {
 }
 
 // newDefaultTestError creates a test error that mimics runtime panic
-// errors. This helps us testing that the Error function can handle various
+// errors. This helps us test that the Error function can handle various
 // error types, including those that might be passed from a panic recovery
 // scenario.
 func newDefaultTestError(s string) error {
