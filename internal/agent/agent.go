@@ -421,6 +421,18 @@ func (a *sessionAgent) Run(ctx context.Context, call SessionAgentCall) (*fantasy
 			currentSession = updatedSession
 			return a.messages.Update(genCtx, *currentAssistant)
 		},
+		RepairToolCall: func(_ context.Context, opts fantasy.ToolCallRepairOptions) (*fantasy.ToolCallContent, error) {
+			// Attempt case-insensitive tool name matching so that tools called
+			// as "View", "VIEW", etc. are resolved to the canonical name.
+			for _, t := range opts.AvailableTools {
+				if strings.EqualFold(t.Info().Name, opts.OriginalToolCall.ToolName) {
+					fixed := opts.OriginalToolCall
+					fixed.ToolName = t.Info().Name
+					return &fixed, nil
+				}
+			}
+			return nil, nil
+		},
 		StopWhen: []fantasy.StopCondition{
 			func(_ []fantasy.StepResult) bool {
 				cw := int64(largeModel.CatwalkCfg.ContextWindow)
