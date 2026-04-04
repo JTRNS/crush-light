@@ -5,7 +5,6 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 
-	mcptools "github.com/charmbracelet/crush/internal/agent/tools/mcp"
 	"github.com/charmbracelet/crush/internal/app"
 	"github.com/charmbracelet/crush/internal/config"
 )
@@ -89,19 +88,4 @@ func (b *Backend) LSPStopAll(ctx context.Context, workspaceID string) error {
 
 	ws.LSPManager.StopAll(ctx)
 	return nil
-}
-
-// MCPGetStates returns the current state of all MCP clients.
-func (b *Backend) MCPGetStates(_ string) map[string]mcptools.ClientInfo {
-	return mcptools.GetStates()
-}
-
-// MCPRefreshPrompts refreshes prompts for a named MCP client.
-func (b *Backend) MCPRefreshPrompts(ctx context.Context, _ string, name string) {
-	mcptools.RefreshPrompts(ctx, name)
-}
-
-// MCPRefreshResources refreshes resources for a named MCP client.
-func (b *Backend) MCPRefreshResources(ctx context.Context, _ string, name string) {
-	mcptools.RefreshResources(ctx, name)
 }

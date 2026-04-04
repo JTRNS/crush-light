@@ -108,7 +108,7 @@ type Styles struct {
 	// Text selection
 	TextSelection lipgloss.Style
 
-	// LSP and MCP status indicators
+	// LSP status indicators
 	ResourceGroupTitle     lipgloss.Style
 	ResourceOfflineIcon    lipgloss.Style
 	ResourceBusyIcon       lipgloss.Style
@@ -313,21 +313,12 @@ type Styles struct {
 		TodoInProgressIcon lipgloss.Style // In-progress todo icon
 		TodoPendingIcon    lipgloss.Style // Pending todo icon
 
-		// MCP tools
-		MCPName     lipgloss.Style // The mcp name
-		MCPToolName lipgloss.Style // The mcp tool name
-		MCPArrow    lipgloss.Style // The mcp arrow icon
-
 		// Images and external resources
 		ResourceLoadedText      lipgloss.Style
 		ResourceLoadedIndicator lipgloss.Style
 		ResourceName            lipgloss.Style
 		ResourceSize            lipgloss.Style
 		MediaType               lipgloss.Style
-
-		// Docker MCP tools
-		DockerMCPActionAdd lipgloss.Style // Docker MCP add action (green)
-		DockerMCPActionDel lipgloss.Style // Docker MCP remove action (red)
 	}
 
 	// Dialog styles
@@ -1170,21 +1161,12 @@ func DefaultStyles() Styles {
 	s.Tool.TodoInProgressIcon = base.Foreground(greenDark)
 	s.Tool.TodoPendingIcon = base.Foreground(fgMuted)
 
-	// MCP styles
-	s.Tool.MCPName = base.Foreground(blue)
-	s.Tool.MCPToolName = base.Foreground(blueDark)
-	s.Tool.MCPArrow = base.Foreground(blue).SetString(ArrowRightIcon)
-
 	// Loading indicators for images, skills
 	s.Tool.ResourceLoadedText = base.Foreground(green)
 	s.Tool.ResourceLoadedIndicator = base.Foreground(greenDark)
 	s.Tool.ResourceName = base
 	s.Tool.MediaType = base
 	s.Tool.ResourceSize = base.Foreground(fgMuted)
-
-	// Docker MCP styles
-	s.Tool.DockerMCPActionAdd = base.Foreground(greenLight)
-	s.Tool.DockerMCPActionDel = base.Foreground(red)
 
 	// Buttons
 	s.ButtonFocus = lipgloss.NewStyle().Foreground(white).Background(secondary)
@@ -1215,7 +1197,7 @@ func DefaultStyles() Styles {
 	s.Initialize.Content = s.Muted
 	s.Initialize.Accent = s.Base.Foreground(greenDark)
 
-	// LSP and MCP status.
+	// LSP status.
 	s.ResourceGroupTitle = lipgloss.NewStyle().Foreground(charmtone.Oyster)
 	s.ResourceOfflineIcon = lipgloss.NewStyle().Foreground(charmtone.Iron).SetString("●")
 	s.ResourceBusyIcon = s.ResourceOfflineIcon.Foreground(charmtone.Citron)

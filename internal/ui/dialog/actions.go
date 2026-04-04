@@ -71,19 +71,6 @@ type (
 		Arguments []commands.Argument
 		Args      map[string]string // Actual argument values
 	}
-	// ActionRunMCPPrompt is a message to run a custom command.
-	ActionRunMCPPrompt struct {
-		Title       string
-		Description string
-		PromptID    string
-		ClientID    string
-		Arguments   []commands.Argument
-		Args        map[string]string // Actual argument values
-	}
-	// ActionEnableDockerMCP is a message to enable Docker MCP.
-	ActionEnableDockerMCP struct{}
-	// ActionDisableDockerMCP is a message to disable Docker MCP.
-	ActionDisableDockerMCP struct{}
 )
 
 // Messages for API key input dialog.
