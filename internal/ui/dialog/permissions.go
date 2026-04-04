@@ -458,11 +458,6 @@ func (p *Permissions) renderHeader(contentWidth int) string {
 		if params, ok := p.permission.Params.(tools.BashPermissionsParams); ok {
 			lines = append(lines, p.renderKeyValue("Desc", params.Description, contentWidth))
 		}
-	case tools.DownloadToolName:
-		if params, ok := p.permission.Params.(tools.DownloadPermissionsParams); ok {
-			lines = append(lines, p.renderKeyValue("URL", params.URL, contentWidth))
-			lines = append(lines, p.renderKeyValue("File", fsext.PrettyPath(params.FilePath), contentWidth))
-		}
 	case tools.EditToolName, tools.WriteToolName, tools.MultiEditToolName, tools.ViewToolName:
 		var filePath string
 		switch params := p.permission.Params.(type) {
@@ -531,12 +526,8 @@ func (p *Permissions) renderContent(width int) string {
 		return p.renderWriteContent(width)
 	case tools.MultiEditToolName:
 		return p.renderMultiEditContent(width)
-	case tools.DownloadToolName:
-		return p.renderDownloadContent(width)
 	case tools.FetchToolName:
 		return p.renderFetchContent(width)
-	case tools.AgenticFetchToolName:
-		return p.renderAgenticFetchContent(width)
 	case tools.ViewToolName:
 		return p.renderViewContent(width)
 	case tools.LSToolName:
@@ -608,20 +599,6 @@ func (p *Permissions) renderDiff(filePath, oldContent, newContent string, conten
 	return result
 }
 
-func (p *Permissions) renderDownloadContent(width int) string {
-	params, ok := p.permission.Params.(tools.DownloadPermissionsParams)
-	if !ok {
-		return ""
-	}
-
-	content := fmt.Sprintf("URL: %s\nFile: %s", params.URL, fsext.PrettyPath(params.FilePath))
-	if params.Timeout > 0 {
-		content += fmt.Sprintf("\nTimeout: %ds", params.Timeout)
-	}
-
-	return p.renderContentPanel(content, width)
-}
-
 func (p *Permissions) renderFetchContent(width int) string {
 	params, ok := p.permission.Params.(tools.FetchPermissionsParams)
 	if !ok {
@@ -629,22 +606,6 @@ func (p *Permissions) renderFetchContent(width int) string {
 	}
 
 	return p.renderContentPanel(params.URL, width)
-}
-
-func (p *Permissions) renderAgenticFetchContent(width int) string {
-	params, ok := p.permission.Params.(tools.AgenticFetchPermissionsParams)
-	if !ok {
-		return ""
-	}
-
-	var content string
-	if params.URL != "" {
-		content = fmt.Sprintf("URL: %s\n\nPrompt: %s", params.URL, params.Prompt)
-	} else {
-		content = fmt.Sprintf("Prompt: %s", params.Prompt)
-	}
-
-	return p.renderContentPanel(content, width)
 }
 
 func (p *Permissions) renderViewContent(width int) string {
