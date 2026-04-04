@@ -5,9 +5,11 @@
 Crush is a terminal-based AI coding assistant built in Go by
 [Charm](https://charm.land). It connects to LLMs and gives them tools to read,
 write, and execute code. It supports multiple providers (Anthropic, OpenAI,
-Gemini, Bedrock, Copilot, Hyper, MiniMax, Vercel, and more), integrates with
-LSPs for code intelligence, and supports extensibility via MCP servers and
-agent skills.
+Gemini, Bedrock, Copilot, and more).
+
+**Note:** crush-light is a stripped-down fork. LSP integration, MCP servers,
+and sub-agent orchestration are in the process of being removed. Do not add
+new dependencies on these subsystems.
 
 The module path is `github.com/charmbracelet/crush`.
 
@@ -24,22 +26,22 @@ internal/
     provider.go                    Provider configuration and model resolution
   agent/
     agent.go                       SessionAgent: runs LLM conversations per session
-    coordinator.go                 Coordinator: manages named agents ("coder", "task")
+    coordinator.go                 Coordinator: manages named agents ("coder", "task") [removal planned]
     prompts.go                     Loads Go-template system prompts
     templates/                     System prompt templates (coder.md.tpl, task.md.tpl, etc.)
     tools/                         All built-in tools (bash, edit, view, grep, glob, etc.)
-      mcp/                         MCP client integration
+      mcp/                         MCP client integration [removal planned]
   session/session.go               Session CRUD backed by SQLite
   message/                         Message model and content types
   db/                              SQLite via sqlc, with migrations
     sql/                           Raw SQL queries (consumed by sqlc)
     migrations/                    Schema migrations
-  lsp/                             LSP client manager, auto-discovery, on-demand startup
+  lsp/                             LSP client manager, auto-discovery, on-demand startup [removal planned]
   ui/                              Bubble Tea v2 TUI (see internal/ui/AGENTS.md)
   permission/                      Tool permission checking and allow-lists
   skills/                          Skill file discovery and loading
   shell/                           Bash command execution with background job support
-  event/                           Telemetry (PostHog)
+  event/                           No-op event stubs (PostHog telemetry removed)
   pubsub/                          Internal pub/sub for cross-component messaging
   filetracker/                     Tracks files touched per session
   history/                         Prompt history
