@@ -69,76 +69,17 @@ type bashDescriptionData struct {
 }
 
 var bannedCommands = []string{
-	// Network/Download tools
-	"alias",
-	"aria2c",
-	"axel",
+	// Always-interactive browsers and tools that will block an agent.
 	"chrome",
-	"curl",
-	"curlie",
+	"fdisk",
 	"firefox",
 	"http-prompt",
-	"httpie",
 	"links",
 	"lynx",
-	"nc",
 	"safari",
-	"scp",
 	"ssh",
 	"telnet",
 	"w3m",
-	"wget",
-	"xh",
-
-	// System administration
-	"doas",
-	"su",
-	"sudo",
-
-	// Package managers
-	"apk",
-	"apt",
-	"apt-cache",
-	"apt-get",
-	"dnf",
-	"dpkg",
-	"emerge",
-	"home-manager",
-	"makepkg",
-	"opkg",
-	"pacman",
-	"paru",
-	"pkg",
-	"pkg_add",
-	"pkg_delete",
-	"portage",
-	"rpm",
-	"yay",
-	"yum",
-	"zypper",
-
-	// System modification
-	"at",
-	"batch",
-	"chkconfig",
-	"crontab",
-	"fdisk",
-	"mkfs",
-	"mount",
-	"parted",
-	"service",
-	"systemctl",
-	"umount",
-
-	// Network configuration
-	"firewall-cmd",
-	"ifconfig",
-	"ip",
-	"iptables",
-	"netstat",
-	"pfctl",
-	"route",
-	"ufw",
 }
 
 func bashDescription(attribution *config.Attribution, modelName string) string {
