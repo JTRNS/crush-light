@@ -207,49 +207,6 @@ func TestCoderAgent(t *testing.T) {
 				require.NoError(t, err)
 				require.Contains(t, string(content), "hello bash")
 			})
-			t.Run("download tool", func(t *testing.T) {
-				agent, env := setupAgent(t, pair)
-
-				session, err := env.sessions.Create(t.Context(), "New Session")
-				require.NoError(t, err)
-
-				res, err := agent.Run(t.Context(), SessionAgentCall{
-					Prompt:          "download the file from https://example-files.online-convert.com/document/txt/example.txt and save it as example.txt",
-					SessionID:       session.ID,
-					MaxOutputTokens: 10000,
-				})
-				require.NoError(t, err)
-				assert.NotNil(t, res)
-
-				msgs, err := env.messages.List(t.Context(), session.ID)
-				require.NoError(t, err)
-
-				foundDownload := false
-				var downloadTCID string
-
-				for _, msg := range msgs {
-					if msg.Role == message.Assistant {
-						for _, tc := range msg.ToolCalls() {
-							if tc.Name == tools.DownloadToolName {
-								downloadTCID = tc.ID
-							}
-						}
-					}
-					if msg.Role == message.Tool {
-						for _, tr := range msg.ToolResults() {
-							if tr.ToolCallID == downloadTCID {
-								foundDownload = true
-							}
-						}
-					}
-				}
-
-				require.True(t, foundDownload, "Expected to find a download operation")
-
-				examplePath := filepath.Join(env.workingDir, "example.txt")
-				_, err = os.Stat(examplePath)
-				require.NoError(t, err, "Expected example.txt file to exist")
-			})
 			t.Run("fetch tool", func(t *testing.T) {
 				agent, env := setupAgent(t, pair)
 

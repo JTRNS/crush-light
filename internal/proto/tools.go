@@ -43,22 +43,6 @@ type DiagnosticsParams struct {
 	FilePath string `json:"file_path"`
 }
 
-const DownloadToolName = "download"
-
-// DownloadParams represents the parameters for the download tool.
-type DownloadParams struct {
-	URL      string `json:"url"`
-	FilePath string `json:"file_path"`
-	Timeout  int    `json:"timeout,omitempty"`
-}
-
-// DownloadPermissionsParams represents the permission parameters for the download tool.
-type DownloadPermissionsParams struct {
-	URL      string `json:"url"`
-	FilePath string `json:"file_path"`
-	Timeout  int    `json:"timeout,omitempty"`
-}
-
 const EditToolName = "edit"
 
 // EditParams represents the parameters for the edit tool.

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"path/filepath"
 	"strings"
-	"time"
 
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
@@ -232,8 +231,6 @@ func NewToolMessageItem(
 		item = NewGrepToolMessageItem(sty, toolCall, result, canceled)
 	case tools.LSToolName:
 		item = NewLSToolMessageItem(sty, toolCall, result, canceled)
-	case tools.DownloadToolName:
-		item = NewDownloadToolMessageItem(sty, toolCall, result, canceled)
 	case tools.FetchToolName:
 		item = NewFetchToolMessageItem(sty, toolCall, result, canceled)
 	case tools.SourcegraphToolName:
@@ -242,12 +239,6 @@ func NewToolMessageItem(
 		item = NewDiagnosticsToolMessageItem(sty, toolCall, result, canceled)
 	case agent.AgentToolName:
 		item = NewAgentToolMessageItem(sty, toolCall, result, canceled)
-	case tools.AgenticFetchToolName:
-		item = NewAgenticFetchToolMessageItem(sty, toolCall, result, canceled)
-	case tools.WebFetchToolName:
-		item = NewWebFetchToolMessageItem(sty, toolCall, result, canceled)
-	case tools.WebSearchToolName:
-		item = NewWebSearchToolMessageItem(sty, toolCall, result, canceled)
 	case tools.TodosToolName:
 		item = NewTodosToolMessageItem(sty, toolCall, result, canceled)
 	case tools.ReferencesToolName:
@@ -920,23 +911,6 @@ func (t *baseToolMessageItem) formatParametersForCopy() string {
 			}
 			return strings.Join(parts, "\n")
 		}
-	case tools.AgenticFetchToolName:
-		var params tools.AgenticFetchParams
-		if json.Unmarshal([]byte(t.toolCall.Input), &params) == nil {
-			var parts []string
-			if params.URL != "" {
-				parts = append(parts, fmt.Sprintf("**URL:** %s", params.URL))
-			}
-			if params.Prompt != "" {
-				parts = append(parts, fmt.Sprintf("**Prompt:** %s", params.Prompt))
-			}
-			return strings.Join(parts, "\n")
-		}
-	case tools.WebFetchToolName:
-		var params tools.WebFetchParams
-		if json.Unmarshal([]byte(t.toolCall.Input), &params) == nil {
-			return fmt.Sprintf("**URL:** %s", params.URL)
-		}
 	case tools.GrepToolName:
 		var params tools.GrepParams
 		if json.Unmarshal([]byte(t.toolCall.Input), &params) == nil {
@@ -971,17 +945,6 @@ func (t *baseToolMessageItem) formatParametersForCopy() string {
 				path = "."
 			}
 			return fmt.Sprintf("**Path:** %s", fsext.PrettyPath(path))
-		}
-	case tools.DownloadToolName:
-		var params tools.DownloadParams
-		if json.Unmarshal([]byte(t.toolCall.Input), &params) == nil {
-			var parts []string
-			parts = append(parts, fmt.Sprintf("**URL:** %s", params.URL))
-			parts = append(parts, fmt.Sprintf("**File Path:** %s", fsext.PrettyPath(params.FilePath)))
-			if params.Timeout > 0 {
-				parts = append(parts, fmt.Sprintf("**Timeout:** %s", (time.Duration(params.Timeout)*time.Second).String()))
-			}
-			return strings.Join(parts, "\n")
 		}
 	case tools.SourcegraphToolName:
 		var params tools.SourcegraphParams
@@ -1047,13 +1010,9 @@ func (t *baseToolMessageItem) formatResultForCopy() string {
 		return t.formatWriteResultForCopy()
 	case tools.FetchToolName:
 		return t.formatFetchResultForCopy()
-	case tools.AgenticFetchToolName:
-		return t.formatAgenticFetchResultForCopy()
-	case tools.WebFetchToolName:
-		return t.formatWebFetchResultForCopy()
 	case agent.AgentToolName:
 		return t.formatAgentResultForCopy()
-	case tools.DownloadToolName, tools.GrepToolName, tools.GlobToolName, tools.LSToolName, tools.SourcegraphToolName, tools.DiagnosticsToolName, tools.TodosToolName:
+	case tools.GrepToolName, tools.GlobToolName, tools.LSToolName, tools.SourcegraphToolName, tools.DiagnosticsToolName, tools.TodosToolName:
 		return fmt.Sprintf("```\n%s\n```", t.result.Content)
 	default:
 		return t.result.Content
@@ -1305,52 +1264,6 @@ func (t *baseToolMessageItem) formatFetchResultForCopy() string {
 	return result.String()
 }
 
-// formatAgenticFetchResultForCopy formats agentic fetch tool results for clipboard.
-func (t *baseToolMessageItem) formatAgenticFetchResultForCopy() string {
-	if t.result == nil {
-		return ""
-	}
-
-	var params tools.AgenticFetchParams
-	if json.Unmarshal([]byte(t.toolCall.Input), &params) != nil {
-		return t.result.Content
-	}
-
-	var result strings.Builder
-	if params.URL != "" {
-		fmt.Fprintf(&result, "URL: %s\n", params.URL)
-	}
-	if params.Prompt != "" {
-		fmt.Fprintf(&result, "Prompt: %s\n\n", params.Prompt)
-	}
-
-	result.WriteString("```markdown\n")
-	result.WriteString(t.result.Content)
-	result.WriteString("\n```")
-
-	return result.String()
-}
-
-// formatWebFetchResultForCopy formats web fetch tool results for clipboard.
-func (t *baseToolMessageItem) formatWebFetchResultForCopy() string {
-	if t.result == nil {
-		return ""
-	}
-
-	var params tools.WebFetchParams
-	if json.Unmarshal([]byte(t.toolCall.Input), &params) != nil {
-		return t.result.Content
-	}
-
-	var result strings.Builder
-	fmt.Fprintf(&result, "URL: %s\n\n", params.URL)
-	result.WriteString("```markdown\n")
-	result.WriteString(t.result.Content)
-	result.WriteString("\n```")
-
-	return result.String()
-}
-
 // formatAgentResultForCopy formats agent tool results for clipboard.
 func (t *baseToolMessageItem) formatAgentResultForCopy() string {
 	if t.result == nil {
@@ -1377,20 +1290,12 @@ func prettifyToolName(name string) string {
 		return "Job: Output"
 	case tools.JobKillToolName:
 		return "Job: Kill"
-	case tools.DownloadToolName:
-		return "Download"
 	case tools.EditToolName:
 		return "Edit"
 	case tools.MultiEditToolName:
 		return "Multi-Edit"
 	case tools.FetchToolName:
 		return "Fetch"
-	case tools.AgenticFetchToolName:
-		return "Agentic Fetch"
-	case tools.WebFetchToolName:
-		return "Fetch"
-	case tools.WebSearchToolName:
-		return "Search"
 	case tools.GlobToolName:
 		return "Glob"
 	case tools.GrepToolName:
