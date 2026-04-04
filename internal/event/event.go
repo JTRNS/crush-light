@@ -59,7 +59,8 @@ func Alias(userID string) {
 	}
 }
 
-// send records an internal event for future local handling.
+// send is a no-op stub retained for call-site compatibility after telemetry
+// removal.
 func send(event string, props ...any) {
 	if event == "" {
 		return
@@ -67,7 +68,8 @@ func send(event string, props ...any) {
 	validateProps(props...)
 }
 
-// Error records an internal error event for future local handling.
+// Error is a no-op stub retained for call-site compatibility after telemetry
+// removal.
 func Error(errToLog any, props ...any) {
 	if errToLog == nil {
 		return

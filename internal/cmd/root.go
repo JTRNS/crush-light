@@ -133,7 +133,7 @@ crush --continue
 		if _, err := program.Run(); err != nil {
 			event.Error(err)
 			slog.Error("TUI run error", "error", err)
-			return errors.New("Crush crashed. Please include the error output above and open an issue at https://github.com/charmbracelet/crush/issues/new?template=bug.yml") //nolint:staticcheck
+			return errors.New("Crush crashed. Please include the error output above and open an issue at https://github.com/JTRNS/crush-light/issues/new") //nolint:staticcheck
 		}
 		return nil
 	},
