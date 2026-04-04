@@ -17,7 +17,6 @@ import (
 
 	"charm.land/catwalk/pkg/catwalk"
 	"charm.land/fantasy"
-	"github.com/charmbracelet/crush/internal/agent/hyper"
 	"github.com/charmbracelet/crush/internal/agent/notify"
 	"github.com/charmbracelet/crush/internal/agent/prompt"
 	"github.com/charmbracelet/crush/internal/agent/tools"
@@ -260,20 +259,7 @@ func getProviderOptions(model Model, providerCfg config.ProviderConfig) fantasy.
 		return options
 	}
 
-	providerType := providerCfg.Type
-	if providerType == "hyper" {
-		if strings.Contains(model.CatwalkCfg.ID, "claude") {
-			providerType = anthropic.Name
-		} else if strings.Contains(model.CatwalkCfg.ID, "gpt") {
-			providerType = openai.Name
-		} else if strings.Contains(model.CatwalkCfg.ID, "gemini") {
-			providerType = google.Name
-		} else {
-			providerType = openaicompat.Name
-		}
-	}
-
-	switch providerType {
+	switch providerCfg.Type {
 	case openai.Name, azure.Name:
 		_, hasReasoningEffort := mergedOptions["reasoning_effort"]
 		if !hasReasoningEffort && model.ModelCfg.ReasoningEffort != "" {
@@ -769,17 +755,6 @@ func (c *coordinator) buildGoogleVertexProvider(headers map[string]string, optio
 	return google.New(opts...)
 }
 
-func (c *coordinator) buildHyperProvider(apiKey string) (fantasy.Provider, error) {
-	opts := []hyper.Option{
-		hyper.WithAPIKey(apiKey),
-	}
-	if c.cfg.Config().Options.Debug {
-		httpClient := log.NewHTTPClient()
-		opts = append(opts, hyper.WithHTTPClient(httpClient))
-	}
-	return hyper.New(opts...)
-}
-
 func (c *coordinator) isAnthropicThinking(model config.SelectedModel) bool {
 	if model.Think {
 		return true
@@ -831,8 +806,6 @@ func (c *coordinator) buildProvider(providerCfg config.ProviderConfig, model con
 			providerCfg.ExtraBody["tool_stream"] = true
 		}
 		return c.buildOpenaiCompatProvider(baseURL, apiKey, headers, providerCfg.ExtraBody, providerCfg.ID, isSubAgent)
-	case hyper.Name:
-		return c.buildHyperProvider(apiKey)
 	default:
 		return nil, fmt.Errorf("provider type not supported: %q", providerCfg.Type)
 	}
