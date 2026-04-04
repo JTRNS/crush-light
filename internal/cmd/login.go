@@ -8,15 +8,11 @@ import (
 	"os/signal"
 
 	"charm.land/lipgloss/v2"
-	"github.com/atotto/clipboard"
-	hyperp "github.com/charmbracelet/crush/internal/agent/hyper"
 	"github.com/charmbracelet/crush/internal/client"
 	"github.com/charmbracelet/crush/internal/config"
 	"github.com/charmbracelet/crush/internal/oauth"
 	"github.com/charmbracelet/crush/internal/oauth/copilot"
-	"github.com/charmbracelet/crush/internal/oauth/hyper"
 	"github.com/charmbracelet/x/ansi"
-	"github.com/pkg/browser"
 	"github.com/spf13/cobra"
 )
 
@@ -26,16 +22,15 @@ var loginCmd = &cobra.Command{
 	Short:   "Login Crush to a platform",
 	Long: `Login Crush to a specified platform.
 The platform should be provided as an argument.
-Available platforms are: hyper, copilot.`,
+Available platforms are: copilot.`,
 	Example: `
-# Authenticate with Charm Hyper
+# Authenticate with GitHub Copilot
 crush login
 
-# Authenticate with GitHub Copilot
+# Authenticate with GitHub Copilot explicitly
 crush login copilot
   `,
 	ValidArgs: []cobra.Completion{
-		"hyper",
 		"copilot",
 		"github",
 		"github-copilot",
@@ -54,81 +49,17 @@ crush login copilot
 			defer func() { _, _ = fmt.Fprintf(os.Stderr, ansi.ResetProgressBar) }()
 		}
 
-		provider := "hyper"
+		provider := "copilot"
 		if len(args) > 0 {
 			provider = args[0]
 		}
 		switch provider {
-		case "hyper":
-			return loginHyper(c, ws.ID)
 		case "copilot", "github", "github-copilot":
 			return loginCopilot(cmd.Context(), c, ws.ID)
 		default:
 			return fmt.Errorf("unknown platform: %s", args[0])
 		}
 	},
-}
-
-func loginHyper(c *client.Client, wsID string) error {
-	if !hyperp.Enabled() {
-		return fmt.Errorf("hyper not enabled")
-	}
-	ctx := getLoginContext()
-
-	resp, err := hyper.InitiateDeviceAuth(ctx)
-	if err != nil {
-		return err
-	}
-
-	if clipboard.WriteAll(resp.UserCode) == nil {
-		fmt.Println("The following code should be on clipboard already:")
-	} else {
-		fmt.Println("Copy the following code:")
-	}
-
-	fmt.Println()
-	fmt.Println(lipgloss.NewStyle().Bold(true).Render(resp.UserCode))
-	fmt.Println()
-	fmt.Println("Press enter to open this URL, and then paste it there:")
-	fmt.Println()
-	fmt.Println(lipgloss.NewStyle().Hyperlink(resp.VerificationURL, "id=hyper").Render(resp.VerificationURL))
-	fmt.Println()
-	waitEnter()
-	if err := browser.OpenURL(resp.VerificationURL); err != nil {
-		fmt.Println("Could not open the URL. You'll need to manually open the URL in your browser.")
-	}
-
-	fmt.Println("Exchanging authorization code...")
-	refreshToken, err := hyper.PollForToken(ctx, resp.DeviceCode, resp.ExpiresIn)
-	if err != nil {
-		return err
-	}
-
-	fmt.Println("Exchanging refresh token for access token...")
-	token, err := hyper.ExchangeToken(ctx, refreshToken)
-	if err != nil {
-		return err
-	}
-
-	fmt.Println("Verifying access token...")
-	introspect, err := hyper.IntrospectToken(ctx, token.AccessToken)
-	if err != nil {
-		return fmt.Errorf("token introspection failed: %w", err)
-	}
-	if !introspect.Active {
-		return fmt.Errorf("access token is not active")
-	}
-
-	if err := cmp.Or(
-		c.SetConfigField(ctx, wsID, config.ScopeGlobal, "providers.hyper.api_key", token.AccessToken),
-		c.SetConfigField(ctx, wsID, config.ScopeGlobal, "providers.hyper.oauth", token),
-	); err != nil {
-		return err
-	}
-
-	fmt.Println()
-	fmt.Println("You're now authenticated with Hyper!")
-	return nil
 }
 
 func loginCopilot(ctx context.Context, c *client.Client, wsID string) error {
