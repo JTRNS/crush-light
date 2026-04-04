@@ -26,6 +26,7 @@ import (
 	"github.com/charmbracelet/crush/internal/client"
 	"github.com/charmbracelet/crush/internal/config"
 	"github.com/charmbracelet/crush/internal/db"
+	"github.com/charmbracelet/crush/internal/event"
 	crushlog "github.com/charmbracelet/crush/internal/log"
 	"github.com/charmbracelet/crush/internal/projects"
 	"github.com/charmbracelet/crush/internal/proto"
@@ -115,6 +116,8 @@ crush --continue
 			sessionID = sess.ID
 		}
 
+		event.AppInitialized()
+
 		com := common.DefaultCommon(ws)
 		model := ui.New(com, sessionID, continueLast)
 
@@ -128,6 +131,7 @@ crush --continue
 		go ws.Subscribe(program)
 
 		if _, err := program.Run(); err != nil {
+			event.Error(err)
 			slog.Error("TUI run error", "error", err)
 			return errors.New("Crush crashed. Please include the error output above and open an issue at https://github.com/charmbracelet/crush/issues/new?template=bug.yml") //nolint:staticcheck
 		}

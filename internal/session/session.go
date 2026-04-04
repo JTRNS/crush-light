@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/crush/internal/db"
+	"github.com/charmbracelet/crush/internal/event"
 	"github.com/charmbracelet/crush/internal/pubsub"
 	"github.com/google/uuid"
 	"github.com/zeebo/xxh3"
@@ -94,6 +95,7 @@ func (s *service) Create(ctx context.Context, title string) (Session, error) {
 	}
 	session := s.fromDBItem(dbSession)
 	s.Publish(pubsub.CreatedEvent, session)
+	event.SessionCreated()
 	return session, nil
 }
 
@@ -153,6 +155,7 @@ func (s *service) Delete(ctx context.Context, id string) error {
 
 	session := s.fromDBItem(dbSession)
 	s.Publish(pubsub.DeletedEvent, session)
+	event.SessionDeleted()
 	return nil
 }
 
