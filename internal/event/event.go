@@ -1,125 +1,87 @@
 package event
 
 import (
-	"fmt"
 	"log/slog"
 	"os"
 	"path/filepath"
-	"reflect"
 	"runtime"
-	"time"
+	"sync"
 
 	"github.com/charmbracelet/crush/internal/version"
-	"github.com/posthog/posthog-go"
 )
 
 const (
-	endpoint = "https://data.charm.land"
-	key      = "phc_4zt4VgDWLqbYnJYEwLRxFoaTL2noNrQij0C6E8k3I0V"
-
 	nonInteractiveAttrName      = "NonInteractive"
 	continueSessionByIDAttrName = "ContinueSessionByID"
 	continueLastSessionAttrName = "ContinueLastSession"
 )
 
-var (
-	client posthog.Client
+type Properties map[string]any
 
-	baseProps = posthog.NewProperties().
-			Set("GOOS", runtime.GOOS).
-			Set("GOARCH", runtime.GOARCH).
-			Set("TERM", os.Getenv("TERM")).
-			Set("SHELL", filepath.Base(os.Getenv("SHELL"))).
-			Set("Version", version.Version).
-			Set("GoVersion", runtime.Version()).
-			Set(nonInteractiveAttrName, false)
+var (
+	basePropsMu sync.RWMutex
+
+	baseProps = Properties{
+		"GOOS":                 runtime.GOOS,
+		"GOARCH":               runtime.GOARCH,
+		"TERM":                 os.Getenv("TERM"),
+		"SHELL":                filepath.Base(os.Getenv("SHELL")),
+		"Version":              version.Version,
+		"GoVersion":            runtime.Version(),
+		nonInteractiveAttrName: false,
+	}
 )
 
 func SetNonInteractive(nonInteractive bool) {
-	baseProps = baseProps.Set(nonInteractiveAttrName, nonInteractive)
+	setBaseProp(nonInteractiveAttrName, nonInteractive)
 }
 
 func SetContinueBySessionID(continueBySessionID bool) {
-	baseProps = baseProps.Set(continueSessionByIDAttrName, continueBySessionID)
+	setBaseProp(continueSessionByIDAttrName, continueBySessionID)
 }
 
 func SetContinueLastSession(continueLastSession bool) {
-	baseProps = baseProps.Set(continueLastSessionAttrName, continueLastSession)
+	setBaseProp(continueLastSessionAttrName, continueLastSession)
 }
 
-func Init() {
-	c, err := posthog.NewWithConfig(key, posthog.Config{
-		Endpoint:        endpoint,
-		Logger:          logger{},
-		ShutdownTimeout: 500 * time.Millisecond,
-	})
-	if err != nil {
-		slog.Error("Failed to initialize PostHog client", "error", err)
-	}
-	client = c
-	distinctId = getDistinctId()
-}
+// Init is a no-op lifecycle hook kept for API compatibility after telemetry
+// removal.
+func Init() {}
 
-func GetID() string { return distinctId }
+// GetID intentionally returns an empty string because the local event system
+// no longer tracks device or user identifiers.
+func GetID() string { return "" }
 
+// Alias preserves the legacy event alias hook without sending remote data.
 func Alias(userID string) {
-	if client == nil || distinctId == fallbackId || distinctId == "" || userID == "" {
+	if userID == "" {
 		return
 	}
-	if err := client.Enqueue(posthog.Alias{
-		DistinctId: distinctId,
-		Alias:      userID,
-	}); err != nil {
-		slog.Error("Failed to enqueue PostHog alias event", "error", err)
-		return
-	}
-	slog.Info("Aliased in PostHog", "machine_id", distinctId, "user_id", userID)
 }
 
-// send logs an event to PostHog with the given event name and properties.
+// send is a no-op stub retained for call-site compatibility after telemetry
+// removal.
 func send(event string, props ...any) {
-	if client == nil {
+	if event == "" {
 		return
 	}
-	err := client.Enqueue(posthog.Capture{
-		DistinctId: distinctId,
-		Event:      event,
-		Properties: pairsToProps(props...).Merge(baseProps),
-	})
-	if err != nil {
-		slog.Error("Failed to enqueue PostHog event", "event", event, "props", props, "error", err)
-		return
-	}
+	validateProps(props...)
 }
 
-// Error logs an error event to PostHog with the error type and message.
+// Error is a no-op stub retained for call-site compatibility after telemetry
+// removal.
 func Error(errToLog any, props ...any) {
-	if client == nil || distinctId == "" || errToLog == nil {
+	if errToLog == nil {
 		return
 	}
-	posthogErr := client.Enqueue(posthog.NewDefaultException(
-		time.Now(),
-		distinctId,
-		reflect.TypeOf(errToLog).String(),
-		fmt.Sprintf("%v", errToLog),
-	))
-	if posthogErr != nil {
-		slog.Error("Failed to enqueue PostHog error", "err", errToLog, "props", props, "posthogErr", posthogErr)
-		return
-	}
+	validateProps(props...)
 }
 
-func Flush() {
-	if client == nil {
-		return
-	}
-	if err := client.Close(); err != nil {
-		slog.Error("Failed to flush PostHog events", "error", err)
-	}
-}
+// Flush preserves the legacy event flush hook without remote telemetry.
+func Flush() {}
 
-func pairsToProps(props ...any) posthog.Properties {
-	p := posthog.NewProperties()
+func pairsToProps(props ...any) Properties {
+	p := Properties{}
 
 	if !isEven(len(props)) {
 		slog.Error("Event properties must be provided as key-value pairs", "props", props)
@@ -133,9 +95,41 @@ func pairsToProps(props ...any) posthog.Properties {
 			continue
 		}
 		value := props[i+1]
-		p = p.Set(key, value)
+		p[key] = value
 	}
 	return p
+}
+
+func (p Properties) Merge(other Properties) Properties {
+	out := make(Properties, len(p)+len(other))
+	for key, value := range other {
+		out[key] = value
+	}
+	for key, value := range p {
+		out[key] = value
+	}
+	return out
+}
+
+func cloneBaseProps() Properties {
+	basePropsMu.RLock()
+	defer basePropsMu.RUnlock()
+
+	out := make(Properties, len(baseProps))
+	for key, value := range baseProps {
+		out[key] = value
+	}
+	return out
+}
+
+func setBaseProp(key string, value any) {
+	basePropsMu.Lock()
+	defer basePropsMu.Unlock()
+	baseProps[key] = value
+}
+
+func validateProps(props ...any) {
+	_ = pairsToProps(props...).Merge(cloneBaseProps())
 }
 
 func isEven(n int) bool {

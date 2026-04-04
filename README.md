@@ -694,36 +694,6 @@ crush update-providers embedded
 crush update-providers --help
 ```
 
-## Metrics
-
-Crush records pseudonymous usage metrics (tied to a device-specific hash),
-which maintainers rely on to inform development and support priorities. The
-metrics include solely usage metadata; prompts and responses are NEVER
-collected.
-
-Details on exactly what’s collected are in the source code ([here](https://github.com/charmbracelet/crush/tree/main/internal/event)
-and [here](https://github.com/charmbracelet/crush/blob/main/internal/llm/agent/event.go)).
-
-You can opt out of metrics collection at any time by setting the environment
-variable by setting the following in your environment:
-
-```bash
-export CRUSH_DISABLE_METRICS=1
-```
-
-Or by setting the following in your config:
-
-```json
-{
-  "options": {
-    "disable_metrics": true
-  }
-}
-```
-
-Crush also respects the `DO_NOT_TRACK` convention which can be enabled via
-`export DO_NOT_TRACK=1`.
-
 ## Q&A
 
 ### Why is clipboard copy and paste not working?

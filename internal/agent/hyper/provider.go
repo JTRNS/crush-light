@@ -24,7 +24,6 @@ import (
 	"charm.land/catwalk/pkg/catwalk"
 	"charm.land/fantasy"
 	"charm.land/fantasy/object"
-	"github.com/charmbracelet/crush/internal/event"
 )
 
 //go:generate wget -O provider.json https://hyper.charm.land/api/v1/provider
@@ -87,10 +86,8 @@ func New(opts ...Option) (fantasy.Provider, error) {
 	o := options{
 		baseURL: BaseURL() + "/api/v1/fantasy",
 		name:    Name,
-		headers: map[string]string{
-			"x-crush-id": event.GetID(),
-		},
-		client: &http.Client{Timeout: 0}, // stream-safe
+		headers: map[string]string{},
+		client:  &http.Client{Timeout: 0}, // stream-safe
 	}
 	for _, opt := range opts {
 		opt(&o)
