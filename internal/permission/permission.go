@@ -3,14 +3,10 @@ package permission
 import (
 	"context"
 	"errors"
-	"os"
-	"path/filepath"
-	"slices"
 	"sync"
 
 	"github.com/charmbracelet/crush/internal/csync"
 	"github.com/charmbracelet/crush/internal/pubsub"
-	"github.com/google/uuid"
 )
 
 var ErrorPermissionDenied = errors.New("user denied permission")
@@ -129,90 +125,12 @@ func (s *permissionService) Deny(permission PermissionRequest) {
 	s.activeRequestMu.Unlock()
 }
 
-func (s *permissionService) Request(ctx context.Context, opts CreatePermissionRequest) (bool, error) {
-	if s.skip {
-		return true, nil
-	}
-
-	// Check if the tool/action combination is in the allowlist
-	commandKey := opts.ToolName + ":" + opts.Action
-	if slices.Contains(s.allowedTools, commandKey) || slices.Contains(s.allowedTools, opts.ToolName) {
-		return true, nil
-	}
-
-	// tell the UI that a permission was requested
-	s.notificationBroker.Publish(pubsub.CreatedEvent, PermissionNotification{
-		ToolCallID: opts.ToolCallID,
-	})
-	s.requestMu.Lock()
-	defer s.requestMu.Unlock()
-
-	s.autoApproveSessionsMu.RLock()
-	autoApprove := s.autoApproveSessions[opts.SessionID]
-	s.autoApproveSessionsMu.RUnlock()
-
-	if autoApprove {
-		s.notificationBroker.Publish(pubsub.CreatedEvent, PermissionNotification{
-			ToolCallID: opts.ToolCallID,
-			Granted:    true,
-		})
-		return true, nil
-	}
-
-	fileInfo, err := os.Stat(opts.Path)
-	dir := opts.Path
-	if err == nil {
-		if fileInfo.IsDir() {
-			dir = opts.Path
-		} else {
-			dir = filepath.Dir(opts.Path)
-		}
-	}
-
-	if dir == "." {
-		dir = s.workingDir
-	}
-	permission := PermissionRequest{
-		ID:          uuid.New().String(),
-		Path:        dir,
-		SessionID:   opts.SessionID,
-		ToolCallID:  opts.ToolCallID,
-		ToolName:    opts.ToolName,
-		Description: opts.Description,
-		Action:      opts.Action,
-		Params:      opts.Params,
-	}
-
-	s.sessionPermissionsMu.RLock()
-	for _, p := range s.sessionPermissions {
-		if p.ToolName == permission.ToolName && p.Action == permission.Action && p.SessionID == permission.SessionID && p.Path == permission.Path {
-			s.sessionPermissionsMu.RUnlock()
-			s.notificationBroker.Publish(pubsub.CreatedEvent, PermissionNotification{
-				ToolCallID: opts.ToolCallID,
-				Granted:    true,
-			})
-			return true, nil
-		}
-	}
-	s.sessionPermissionsMu.RUnlock()
-
-	s.activeRequestMu.Lock()
-	s.activeRequest = &permission
-	s.activeRequestMu.Unlock()
-
-	respCh := make(chan bool, 1)
-	s.pendingRequests.Set(permission.ID, respCh)
-	defer s.pendingRequests.Del(permission.ID)
-
-	// Publish the request
-	s.Publish(pubsub.CreatedEvent, permission)
-
-	select {
-	case <-ctx.Done():
-		return false, ctx.Err()
-	case granted := <-respCh:
-		return granted, nil
-	}
+// Request always grants permission immediately. All tool actions are
+// auto-approved; the permission service is retained for its pub/sub
+// notification infrastructure used by callers that still subscribe to
+// permission events.
+func (s *permissionService) Request(_ context.Context, _ CreatePermissionRequest) (bool, error) {
+	return true, nil
 }
 
 func (s *permissionService) AutoApproveSession(sessionID string) {

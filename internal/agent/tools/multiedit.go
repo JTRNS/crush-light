@@ -168,38 +168,13 @@ func processMultiEditWithCreation(edit editContext, params MultiEditParams, call
 		return fantasy.ToolResponse{}, fmt.Errorf("session ID is required for creating a new file")
 	}
 
-	// Check permissions
+	// Generate diff
 	_, additions, removals := diff.GenerateDiff("", currentContent, strings.TrimPrefix(params.FilePath, edit.workingDir))
 
 	editsApplied := len(params.Edits) - len(failedEdits)
-	var description string
-	if len(failedEdits) > 0 {
-		description = fmt.Sprintf("Create file %s with %d of %d edits (%d failed)", params.FilePath, editsApplied, len(params.Edits), len(failedEdits))
-	} else {
-		description = fmt.Sprintf("Create file %s with %d edits", params.FilePath, editsApplied)
-	}
-	p, err := edit.permissions.Request(edit.ctx, permission.CreatePermissionRequest{
-		SessionID:   sessionID,
-		Path:        fsext.PathOrPrefix(params.FilePath, edit.workingDir),
-		ToolCallID:  call.ID,
-		ToolName:    MultiEditToolName,
-		Action:      "write",
-		Description: description,
-		Params: MultiEditPermissionsParams{
-			FilePath:   params.FilePath,
-			OldContent: "",
-			NewContent: currentContent,
-		},
-	})
-	if err != nil {
-		return fantasy.ToolResponse{}, err
-	}
-	if !p {
-		return fantasy.ToolResponse{}, permission.ErrorPermissionDenied
-	}
 
 	// Write the file
-	err = os.WriteFile(params.FilePath, []byte(currentContent), 0o644)
+	err := os.WriteFile(params.FilePath, []byte(currentContent), 0o644)
 	if err != nil {
 		return fantasy.ToolResponse{}, fmt.Errorf("failed to write file: %w", err)
 	}
@@ -310,36 +285,10 @@ func processMultiEditExistingFile(edit editContext, params MultiEditParams, call
 		return fantasy.NewTextErrorResponse("no changes made - all edits resulted in identical content"), nil
 	}
 
-	// Generate diff and check permissions
+	// Generate diff
 	_, additions, removals := diff.GenerateDiff(oldContent, currentContent, strings.TrimPrefix(params.FilePath, edit.workingDir))
 
 	editsApplied := len(params.Edits) - len(failedEdits)
-	var description string
-	if len(failedEdits) > 0 {
-		description = fmt.Sprintf("Apply %d of %d edits to file %s (%d failed)", editsApplied, len(params.Edits), params.FilePath, len(failedEdits))
-	} else {
-		description = fmt.Sprintf("Apply %d edits to file %s", editsApplied, params.FilePath)
-	}
-	p, err := edit.permissions.Request(edit.ctx, permission.CreatePermissionRequest{
-		SessionID:   sessionID,
-		Path:        fsext.PathOrPrefix(params.FilePath, edit.workingDir),
-		ToolCallID:  call.ID,
-		ToolName:    MultiEditToolName,
-		Action:      "write",
-		Description: description,
-		Params: MultiEditPermissionsParams{
-			FilePath:   params.FilePath,
-			OldContent: oldContent,
-			NewContent: currentContent,
-		},
-	})
-	if err != nil {
-		return fantasy.ToolResponse{}, err
-	}
-	if !p {
-		return fantasy.ToolResponse{}, permission.ErrorPermissionDenied
-	}
-
 	if isCrlf {
 		currentContent, _ = fsext.ToWindowsLineEndings(currentContent)
 	}
