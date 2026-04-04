@@ -44,10 +44,13 @@ func SetContinueLastSession(continueLastSession bool) {
 	setBaseProp(continueLastSessionAttrName, continueLastSession)
 }
 
+// Init preserves the event package lifecycle hook without remote telemetry.
 func Init() {}
 
+// GetID returns an empty identifier because telemetry IDs are no longer used.
 func GetID() string { return "" }
 
+// Alias preserves the legacy event alias hook without sending remote data.
 func Alias(userID string) {
 	if userID == "" {
 		return
@@ -70,6 +73,7 @@ func Error(errToLog any, props ...any) {
 	validateProps(props...)
 }
 
+// Flush preserves the legacy event flush hook without remote telemetry.
 func Flush() {}
 
 func pairsToProps(props ...any) Properties {
