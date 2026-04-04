@@ -23,13 +23,9 @@ const (
 )
 
 type header struct {
-	// cached logo and compact logo
-	logo        string
 	compactLogo string
 
-	com     *common.Common
-	width   int
-	compact bool
+	com *common.Common
 }
 
 // newHeader creates a new header model.
@@ -38,8 +34,7 @@ func newHeader(com *common.Common) *header {
 		com: com,
 	}
 	t := com.Styles
-	h.compactLogo = t.Header.Charm.Render("Charm™") + " " +
-		styles.ApplyBoldForegroundGrad(t, "CRUSH", t.Secondary, t.Primary) + " "
+	h.compactLogo = styles.ApplyBoldForegroundGrad(t, "CRUSH", t.Secondary, t.Primary) + " "
 	return h
 }
 
@@ -53,19 +48,8 @@ func (h *header) drawHeader(
 	width int,
 ) {
 	t := h.com.Styles
-	if width != h.width || compact != h.compact {
-		h.logo = renderLogo(h.com.Styles, compact, width)
-	}
 
-	h.width = width
-	h.compact = compact
-
-	if !compact || session == nil {
-		uv.NewStyledString(h.logo).Draw(scr, area)
-		return
-	}
-
-	if session.ID == "" {
+	if !compact || session == nil || session.ID == "" {
 		return
 	}
 
