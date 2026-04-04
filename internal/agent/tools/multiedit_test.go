@@ -210,3 +210,25 @@ func TestMultiEditAllEditsFail(t *testing.T) {
 	require.Len(t, failedEdits, 2)
 	require.Equal(t, content, currentContent, "Content should be unchanged")
 }
+
+func TestResolveMultiEditPathRejectsRelativeEscape(t *testing.T) {
+	t.Parallel()
+
+	workingDir := t.TempDir()
+
+	_, err := resolveMultiEditPath(workingDir, filepath.Join("..", "outside.txt"))
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "use an absolute path")
+}
+
+func TestResolveMultiEditPathAllowsAbsolutePathOutsideWorkingDir(t *testing.T) {
+	t.Parallel()
+
+	workingDir := t.TempDir()
+	outsideDir := t.TempDir()
+	outsidePath := filepath.Join(outsideDir, "outside.txt")
+
+	resolvedPath, err := resolveMultiEditPath(workingDir, outsidePath)
+	require.NoError(t, err)
+	require.Equal(t, outsidePath, resolvedPath)
+}

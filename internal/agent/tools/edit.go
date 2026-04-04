@@ -133,28 +133,6 @@ func createNewFile(edit editContext, filePath, content string, call fantasy.Tool
 		content,
 		strings.TrimPrefix(filePath, edit.workingDir),
 	)
-	p, err := edit.permissions.Request(edit.ctx,
-		permission.CreatePermissionRequest{
-			SessionID:   sessionID,
-			Path:        fsext.PathOrPrefix(filePath, edit.workingDir),
-			ToolCallID:  call.ID,
-			ToolName:    EditToolName,
-			Action:      "write",
-			Description: fmt.Sprintf("Create file %s", filePath),
-			Params: EditPermissionsParams{
-				FilePath:   filePath,
-				OldContent: "",
-				NewContent: content,
-			},
-		},
-	)
-	if err != nil {
-		return fantasy.ToolResponse{}, err
-	}
-	if !p {
-		return fantasy.ToolResponse{}, permission.ErrorPermissionDenied
-	}
-
 	err = os.WriteFile(filePath, []byte(content), 0o644)
 	if err != nil {
 		return fantasy.ToolResponse{}, fmt.Errorf("failed to write file: %w", err)
@@ -251,28 +229,6 @@ func deleteContent(edit editContext, filePath, oldString string, replaceAll bool
 		newContent,
 		strings.TrimPrefix(filePath, edit.workingDir),
 	)
-
-	p, err := edit.permissions.Request(edit.ctx,
-		permission.CreatePermissionRequest{
-			SessionID:   sessionID,
-			Path:        fsext.PathOrPrefix(filePath, edit.workingDir),
-			ToolCallID:  call.ID,
-			ToolName:    EditToolName,
-			Action:      "write",
-			Description: fmt.Sprintf("Delete content from file %s", filePath),
-			Params: EditPermissionsParams{
-				FilePath:   filePath,
-				OldContent: oldContent,
-				NewContent: newContent,
-			},
-		},
-	)
-	if err != nil {
-		return fantasy.ToolResponse{}, err
-	}
-	if !p {
-		return fantasy.ToolResponse{}, permission.ErrorPermissionDenied
-	}
 
 	if isCrlf {
 		newContent, _ = fsext.ToWindowsLineEndings(newContent)
@@ -382,28 +338,6 @@ func replaceContent(edit editContext, filePath, oldString, newString string, rep
 		newContent,
 		strings.TrimPrefix(filePath, edit.workingDir),
 	)
-
-	p, err := edit.permissions.Request(edit.ctx,
-		permission.CreatePermissionRequest{
-			SessionID:   sessionID,
-			Path:        fsext.PathOrPrefix(filePath, edit.workingDir),
-			ToolCallID:  call.ID,
-			ToolName:    EditToolName,
-			Action:      "write",
-			Description: fmt.Sprintf("Replace content in file %s", filePath),
-			Params: EditPermissionsParams{
-				FilePath:   filePath,
-				OldContent: oldContent,
-				NewContent: newContent,
-			},
-		},
-	)
-	if err != nil {
-		return fantasy.ToolResponse{}, err
-	}
-	if !p {
-		return fantasy.ToolResponse{}, permission.ErrorPermissionDenied
-	}
 
 	if isCrlf {
 		newContent, _ = fsext.ToWindowsLineEndings(newContent)

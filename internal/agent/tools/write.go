@@ -14,7 +14,6 @@ import (
 	"github.com/charmbracelet/crush/internal/diff"
 	"github.com/charmbracelet/crush/internal/filepathext"
 	"github.com/charmbracelet/crush/internal/filetracker"
-	"github.com/charmbracelet/crush/internal/fsext"
 	"github.com/charmbracelet/crush/internal/history"
 
 	"github.com/charmbracelet/crush/internal/lsp"
@@ -108,28 +107,6 @@ func NewWriteTool(
 				params.Content,
 				strings.TrimPrefix(filePath, workingDir),
 			)
-
-			p, err := permissions.Request(ctx,
-				permission.CreatePermissionRequest{
-					SessionID:   sessionID,
-					Path:        fsext.PathOrPrefix(filePath, workingDir),
-					ToolCallID:  call.ID,
-					ToolName:    WriteToolName,
-					Action:      "write",
-					Description: fmt.Sprintf("Create file %s", filePath),
-					Params: WritePermissionsParams{
-						FilePath:   filePath,
-						OldContent: oldContent,
-						NewContent: params.Content,
-					},
-				},
-			)
-			if err != nil {
-				return fantasy.ToolResponse{}, err
-			}
-			if !p {
-				return fantasy.ToolResponse{}, permission.ErrorPermissionDenied
-			}
 
 			err = os.WriteFile(filePath, []byte(params.Content), 0o644)
 			if err != nil {

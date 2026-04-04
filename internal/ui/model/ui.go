@@ -325,9 +325,9 @@ func New(com *common.Common, initialSessionID string, continueLast bool) *UI {
 
 	status := NewStatus(com, ui)
 
-	ui.setEditorPrompt(false)
+	ui.setEditorPrompt(true)
 	ui.randomizePlaceholders()
-	ui.textarea.Placeholder = ui.readyPlaceholder
+	ui.textarea.Placeholder = "Yolo mode!"
 	ui.status = status
 
 	// Initialize compact mode from config
@@ -873,9 +873,6 @@ func (m *UI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.isAgentBusy() {
 			m.textarea.Placeholder = m.workingPlaceholder
 		} else {
-			m.textarea.Placeholder = m.readyPlaceholder
-		}
-		if m.com.Workspace.PermissionSkipRequests() {
 			m.textarea.Placeholder = "Yolo mode!"
 		}
 	}
@@ -1290,11 +1287,6 @@ func (m *UI) handleDialogMsg(msg tea.Msg) tea.Cmd {
 		}
 
 	// Command dialog messages.
-	case dialog.ActionToggleYoloMode:
-		yolo := !m.com.Workspace.PermissionSkipRequests()
-		m.com.Workspace.PermissionSetSkipRequests(yolo)
-		m.setEditorPrompt(yolo)
-		m.dialog.CloseDialog(dialog.CommandsID)
 	case dialog.ActionToggleNotifications:
 		cfg := m.com.Config()
 		if cfg != nil && cfg.Options != nil {

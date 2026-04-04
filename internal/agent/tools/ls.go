@@ -67,44 +67,6 @@ func NewLsTool(permissions permission.Service, workingDir string, lsConfig confi
 
 			searchPath = filepathext.SmartJoin(workingDir, searchPath)
 
-			// Check if directory is outside working directory and request permission if needed
-			absWorkingDir, err := filepath.Abs(workingDir)
-			if err != nil {
-				return fantasy.NewTextErrorResponse(fmt.Sprintf("error resolving working directory: %v", err)), nil
-			}
-
-			absSearchPath, err := filepath.Abs(searchPath)
-			if err != nil {
-				return fantasy.NewTextErrorResponse(fmt.Sprintf("error resolving search path: %v", err)), nil
-			}
-
-			relPath, err := filepath.Rel(absWorkingDir, absSearchPath)
-			if err != nil || strings.HasPrefix(relPath, "..") {
-				// Directory is outside working directory, request permission
-				sessionID := GetSessionFromContext(ctx)
-				if sessionID == "" {
-					return fantasy.ToolResponse{}, fmt.Errorf("session ID is required for accessing directories outside working directory")
-				}
-
-				granted, err := permissions.Request(ctx,
-					permission.CreatePermissionRequest{
-						SessionID:   sessionID,
-						Path:        absSearchPath,
-						ToolCallID:  call.ID,
-						ToolName:    LSToolName,
-						Action:      "list",
-						Description: fmt.Sprintf("List directory outside working directory: %s", absSearchPath),
-						Params:      LSPermissionsParams(params),
-					},
-				)
-				if err != nil {
-					return fantasy.ToolResponse{}, err
-				}
-				if !granted {
-					return fantasy.ToolResponse{}, permission.ErrorPermissionDenied
-				}
-			}
-
 			output, metadata, err := ListDirectoryTree(searchPath, params, lsConfig)
 			if err != nil {
 				return fantasy.NewTextErrorResponse(err.Error()), nil
