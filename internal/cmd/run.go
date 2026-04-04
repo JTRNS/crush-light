@@ -13,7 +13,6 @@ import (
 	"charm.land/log/v2"
 	"github.com/charmbracelet/crush/internal/client"
 	"github.com/charmbracelet/crush/internal/config"
-	"github.com/charmbracelet/crush/internal/event"
 	"github.com/charmbracelet/crush/internal/format"
 	"github.com/charmbracelet/crush/internal/proto"
 	"github.com/charmbracelet/crush/internal/pubsub"
@@ -83,16 +82,6 @@ crush run --continue "Follow up on your last response"
 
 		if prompt == "" {
 			return fmt.Errorf("no prompt provided")
-		}
-
-		event.SetNonInteractive(true)
-		event.AppInitialized()
-
-		switch {
-		case sessionID != "":
-			event.SetContinueBySessionID(true)
-		case useLast:
-			event.SetContinueLastSession(true)
 		}
 
 		if useClientServer() {
