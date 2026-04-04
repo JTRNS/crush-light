@@ -244,10 +244,6 @@ type UI struct {
 	promptQueue        int
 	pillsView          string
 
-	// Todo spinner
-	todoSpinner    spinner.Model
-	todoIsSpinning bool
-
 	// mouse highlighting related state
 	lastClickTime time.Time
 
@@ -285,11 +281,6 @@ func New(com *common.Common, initialSessionID string, continueLast bool) *UI {
 		com.Styles.Completions.Match,
 	)
 
-	todoSpinner := spinner.New(
-		spinner.WithSpinner(spinner.MiniDot),
-		spinner.WithStyle(com.Styles.Pills.TodoSpinner),
-	)
-
 	// Attachments component
 	attachments := attachments.New(
 		attachments.NewRenderer(
@@ -316,7 +307,6 @@ func New(com *common.Common, initialSessionID string, continueLast bool) *UI {
 		header:              header,
 		completions:         comp,
 		attachments:         attachments,
-		todoSpinner:         todoSpinner,
 		lspStates:           make(map[string]workspace.LSPClientInfo),
 		mcpStates:           make(map[string]mcp.ClientInfo),
 		notifyBackend:       notification.NoopBackend{},
@@ -508,14 +498,6 @@ func (m *UI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if cmd := m.setSessionMessages(msgs); cmd != nil {
 			cmds = append(cmds, cmd)
 		}
-		if hasInProgressTodo(m.session.Todos) {
-			// only start spinner if there is an in-progress todo
-			if m.isAgentBusy() {
-				m.todoIsSpinning = true
-				cmds = append(cmds, m.todoSpinner.Tick)
-			}
-			m.updateLayoutAndSize()
-		}
 		// Reload prompt history for the new session.
 		m.historyReset()
 		cmds = append(cmds, m.loadPromptHistory())
@@ -576,13 +558,7 @@ func (m *UI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			break
 		}
 		if m.session != nil && msg.Payload.ID == m.session.ID {
-			prevHasInProgress := hasInProgressTodo(m.session.Todos)
 			m.session = &msg.Payload
-			if !prevHasInProgress && hasInProgressTodo(m.session.Todos) {
-				m.todoIsSpinning = true
-				cmds = append(cmds, m.todoSpinner.Tick)
-				m.updateLayoutAndSize()
-			}
 		}
 	case pubsub.Event[message.Message]:
 		// Check if this is a child session message for an agent tool.
@@ -603,15 +579,6 @@ func (m *UI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			cmds = append(cmds, m.updateSessionMessage(msg.Payload))
 		case pubsub.DeletedEvent:
 			m.chat.RemoveMessage(msg.Payload.ID)
-		}
-		// start the spinner if there is a new message
-		if hasInProgressTodo(m.session.Todos) && m.isAgentBusy() && !m.todoIsSpinning {
-			m.todoIsSpinning = true
-			cmds = append(cmds, m.todoSpinner.Tick)
-		}
-		// stop the spinner if the agent is not busy anymore
-		if m.todoIsSpinning && !m.isAgentBusy() {
-			m.todoIsSpinning = false
 		}
 		// there is a number of things that could change the pills here so we want to re-render
 		m.renderPills()
@@ -812,14 +779,6 @@ func (m *UI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.dialog.HasDialogs() {
 			// route to dialog
 			if cmd := m.handleDialogMsg(msg); cmd != nil {
-				cmds = append(cmds, cmd)
-			}
-		}
-		if m.state == uiChat && m.hasSession() && hasInProgressTodo(m.session.Todos) && m.todoIsSpinning {
-			var cmd tea.Cmd
-			m.todoSpinner, cmd = m.todoSpinner.Update(msg)
-			if cmd != nil {
-				m.renderPills()
 				cmds = append(cmds, cmd)
 			}
 		}
@@ -2184,7 +2143,7 @@ func (m *UI) ShortHelp() []key.Binding {
 				k.Chat.PageDown,
 				k.Chat.Copy,
 			)
-			if m.pillsExpanded && hasIncompleteTodos(m.session.Todos) && m.promptQueue > 0 {
+			if m.pillsExpanded && m.promptQueue > 0 {
 				binds = append(binds, k.Chat.PillLeft)
 			}
 		}
@@ -2297,7 +2256,7 @@ func (m *UI) FullHelp() [][]key.Binding {
 					k.Chat.ClearHighlight,
 				},
 			)
-			if m.pillsExpanded && hasIncompleteTodos(m.session.Todos) && m.promptQueue > 0 {
+			if m.pillsExpanded && m.promptQueue > 0 {
 				binds = append(binds, []key.Binding{k.Chat.PillLeft})
 			}
 		}
@@ -2962,8 +2921,6 @@ func (m *UI) cancelAgent() tea.Cmd {
 		// Second escape press - actually cancel the agent.
 		m.isCanceling = false
 		m.com.Workspace.AgentCancel(m.session.ID)
-		// Stop the spinning todo indicator.
-		m.todoIsSpinning = false
 		m.renderPills()
 		return nil
 	}
@@ -3059,10 +3016,9 @@ func (m *UI) openCommandsDialog() tea.Cmd {
 	if hasSession {
 		sessionID = m.session.ID
 	}
-	hasTodos := hasSession && hasIncompleteTodos(m.session.Todos)
 	hasQueue := m.promptQueue > 0
 
-	commands, err := dialog.NewCommands(m.com, sessionID, hasSession, hasTodos, hasQueue, m.customCommands, m.mcpPrompts)
+	commands, err := dialog.NewCommands(m.com, sessionID, hasSession, hasQueue, m.customCommands, m.mcpPrompts)
 	if err != nil {
 		return util.ReportError(err)
 	}
