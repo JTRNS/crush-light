@@ -44,10 +44,12 @@ func SetContinueLastSession(continueLastSession bool) {
 	setBaseProp(continueLastSessionAttrName, continueLastSession)
 }
 
-// Init preserves the event package lifecycle hook without remote telemetry.
+// Init is a no-op lifecycle hook kept for API compatibility after telemetry
+// removal.
 func Init() {}
 
-// GetID returns an empty identifier because telemetry IDs are no longer used.
+// GetID intentionally returns an empty string because the local event system
+// no longer tracks device or user identifiers.
 func GetID() string { return "" }
 
 // Alias preserves the legacy event alias hook without sending remote data.
