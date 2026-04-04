@@ -76,7 +76,11 @@ func NewMultiEditTool(
 				return fantasy.NewTextErrorResponse("at least one edit operation is required"), nil
 			}
 
-			params.FilePath = filepathext.SmartJoin(workingDir, params.FilePath)
+			resolvedPath, resolveErr := resolveMultiEditPath(workingDir, params.FilePath)
+			if resolveErr != nil {
+				return fantasy.NewTextErrorResponse(resolveErr.Error()), nil
+			}
+			params.FilePath = resolvedPath
 
 			// Validate all edits before applying any
 			if err := validateEdits(params.Edits); err != nil {
@@ -121,6 +125,32 @@ func validateEdits(edits []MultiEditOperation) error {
 		}
 	}
 	return nil
+}
+
+func resolveMultiEditPath(workingDir, requestedPath string) (string, error) {
+	resolvedPath, err := filepath.Abs(filepathext.SmartJoin(workingDir, requestedPath))
+	if err != nil {
+		return "", fmt.Errorf("failed to resolve file path: %w", err)
+	}
+
+	if filepathext.SmartIsAbs(requestedPath) {
+		return resolvedPath, nil
+	}
+
+	resolvedWorkingDir, err := filepath.Abs(workingDir)
+	if err != nil {
+		return "", fmt.Errorf("failed to resolve working directory: %w", err)
+	}
+
+	relPath, err := filepath.Rel(resolvedWorkingDir, resolvedPath)
+	if err != nil {
+		return "", fmt.Errorf("failed to resolve file path: %w", err)
+	}
+	if strings.HasPrefix(relPath, "..") {
+		return "", fmt.Errorf("relative file_path must stay within the working directory; use an absolute path to access files outside it")
+	}
+
+	return resolvedPath, nil
 }
 
 func processMultiEditWithCreation(edit editContext, params MultiEditParams, call fantasy.ToolCall) (fantasy.ToolResponse, error) {
