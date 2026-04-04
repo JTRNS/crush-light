@@ -1,16 +1,13 @@
 package completions
 
 import (
-	"cmp"
 	"path/filepath"
 	"slices"
 	"strings"
-	"sync"
 
 	"charm.land/bubbles/v2/key"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
-	"github.com/charmbracelet/crush/internal/agent/tools/mcp"
 	"github.com/charmbracelet/crush/internal/fsext"
 	"github.com/charmbracelet/crush/internal/ui/list"
 	"github.com/charmbracelet/x/ansi"
@@ -135,19 +132,12 @@ func (c *Completions) KeyMap() KeyMap {
 func (c *Completions) Open(depth, limit int) tea.Cmd {
 	return func() tea.Msg {
 		var msg CompletionItemsLoadedMsg
-		var wg sync.WaitGroup
-		wg.Go(func() {
-			msg.Files = loadFiles(depth, limit)
-		})
-		wg.Go(func() {
-			msg.Resources = loadMCPResources()
-		})
-		wg.Wait()
+		msg.Files = loadFiles(depth, limit)
 		return msg
 	}
 }
 
-// SetItems sets the files and MCP resources and rebuilds the merged list.
+// SetItems sets the files and rebuilds the merged list.
 func (c *Completions) SetItems(files []FileCompletionValue, resources []ResourceCompletionValue) {
 	items := make([]list.FilterableItem, 0, len(files)+len(resources))
 
@@ -156,18 +146,6 @@ func (c *Completions) SetItems(files []FileCompletionValue, resources []Resource
 		item := NewCompletionItem(
 			file.Path,
 			file,
-			c.normalStyle,
-			c.focusedStyle,
-			c.matchStyle,
-		)
-		items = append(items, item)
-	}
-
-	// Add MCP resources.
-	for _, resource := range resources {
-		item := NewCompletionItem(
-			resource.MCPName+"/"+cmp.Or(resource.Title, resource.URI),
-			resource,
 			c.normalStyle,
 			c.focusedStyle,
 			c.matchStyle,
@@ -405,19 +383,4 @@ func loadFiles(depth, limit int) []FileCompletionValue {
 		})
 	}
 	return result
-}
-
-func loadMCPResources() []ResourceCompletionValue {
-	var resources []ResourceCompletionValue
-	for mcpName, mcpResources := range mcp.Resources() {
-		for _, r := range mcpResources {
-			resources = append(resources, ResourceCompletionValue{
-				MCPName:  mcpName,
-				URI:      r.URI,
-				Title:    r.Name,
-				MIMEType: r.MIMEType,
-			})
-		}
-	}
-	return resources
 }

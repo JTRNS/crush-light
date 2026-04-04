@@ -15,7 +15,6 @@ import (
 	"github.com/charmbracelet/crush/internal/permission"
 	"github.com/charmbracelet/crush/internal/stringext"
 	"github.com/charmbracelet/crush/internal/ui/common"
-	"github.com/charmbracelet/crush/internal/ui/styles"
 	uv "github.com/charmbracelet/ultraviolet"
 )
 
@@ -495,17 +494,6 @@ func (p *Permissions) renderKeyValue(key, value string, width int) string {
 
 func (p *Permissions) renderToolName(width int) string {
 	toolName := p.permission.ToolName
-
-	// Check if this is an MCP tool (format: mcp_<mcpname>_<toolname>).
-	if strings.HasPrefix(toolName, "mcp_") {
-		parts := strings.SplitN(toolName, "_", 3)
-		if len(parts) == 3 {
-			mcpName := prettyName(parts[1])
-			toolPart := prettyName(parts[2])
-			toolName = fmt.Sprintf("%s %s %s", mcpName, styles.ArrowRightIcon, toolPart)
-		}
-	}
-
 	return p.renderKeyValue("Tool", toolName, width)
 }
 
@@ -641,11 +629,7 @@ func (p *Permissions) renderLSContent(width int) string {
 
 func (p *Permissions) renderDefaultContent(width int) string {
 	t := p.com.Styles
-	var content string
-	// do not add the description for mcp tools
-	if !strings.HasPrefix(p.permission.ToolName, "mcp_") {
-		content = p.permission.Description
-	}
+	content := p.permission.Description
 
 	// Pretty-print JSON params if available.
 	if p.permission.Params != nil {

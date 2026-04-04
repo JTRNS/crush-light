@@ -55,55 +55,47 @@ func (m *UI) modelInfo(width int) string {
 	return common.ModelInfo(m.com.Styles, modelName, providerName, reasoningInfo, modelContext, width)
 }
 
-// getDynamicHeightLimits will give us the num of items to show in each section based on the hight
-// some items are more important than others.
-func getDynamicHeightLimits(availableHeight int) (maxFiles, maxLSPs, maxMCPs int) {
+// getDynamicHeightLimits will give us the num of items to show in each section based on the height.
+// Some items are more important than others.
+func getDynamicHeightLimits(availableHeight int) (maxFiles, maxLSPs int) {
 	const (
 		minItemsPerSection      = 2
 		defaultMaxFilesShown    = 10
 		defaultMaxLSPsShown     = 8
-		defaultMaxMCPsShown     = 8
 		minAvailableHeightLimit = 10
 	)
 
 	// If we have very little space, use minimum values
 	if availableHeight < minAvailableHeightLimit {
-		return minItemsPerSection, minItemsPerSection, minItemsPerSection
+		return minItemsPerSection, minItemsPerSection
 	}
 
-	// Distribute available height among the three sections
-	// Give priority to files, then LSPs, then MCPs
-	totalSections := 3
+	// Distribute available height among the two sections.
+	// Give priority to files, then LSPs.
+	totalSections := 2
 	heightPerSection := availableHeight / totalSections
 
-	// Calculate limits for each section, ensuring minimums
+	// Calculate limits for each section, ensuring minimums.
 	maxFiles = max(minItemsPerSection, min(defaultMaxFilesShown, heightPerSection))
 	maxLSPs = max(minItemsPerSection, min(defaultMaxLSPsShown, heightPerSection))
-	maxMCPs = max(minItemsPerSection, min(defaultMaxMCPsShown, heightPerSection))
 
-	// If we have extra space, give it to files first
-	remainingHeight := availableHeight - (maxFiles + maxLSPs + maxMCPs)
+	// If we have extra space, give it to files first.
+	remainingHeight := availableHeight - (maxFiles + maxLSPs)
 	if remainingHeight > 0 {
 		extraForFiles := min(remainingHeight, defaultMaxFilesShown-maxFiles)
 		maxFiles += extraForFiles
 		remainingHeight -= extraForFiles
 
 		if remainingHeight > 0 {
-			extraForLSPs := min(remainingHeight, defaultMaxLSPsShown-maxLSPs)
-			maxLSPs += extraForLSPs
-			remainingHeight -= extraForLSPs
-
-			if remainingHeight > 0 {
-				maxMCPs += min(remainingHeight, defaultMaxMCPsShown-maxMCPs)
-			}
+			maxLSPs += min(remainingHeight, defaultMaxLSPsShown-maxLSPs)
 		}
 	}
 
-	return maxFiles, maxLSPs, maxMCPs
+	return maxFiles, maxLSPs
 }
 
 // sidebar renders the chat sidebar containing session title, working
-// directory, model info, file list, LSP status, and MCP status.
+// directory, model info, file list, and LSP status.
 func (m *UI) drawSidebar(scr uv.Screen, area uv.Rectangle) {
 	if m.session == nil {
 		return
@@ -138,10 +130,9 @@ func (m *UI) drawSidebar(scr uv.Screen, area uv.Rectangle) {
 
 	_, remainingHeightArea := layout.SplitVertical(m.layout.sidebar, layout.Fixed(lipgloss.Height(sidebarHeader)))
 	remainingHeight := remainingHeightArea.Dy() - 10
-	maxFiles, maxLSPs, maxMCPs := getDynamicHeightLimits(remainingHeight)
+	maxFiles, maxLSPs := getDynamicHeightLimits(remainingHeight)
 
 	lspSection := m.lspInfo(width, maxLSPs, true)
-	mcpSection := m.mcpInfo(width, maxMCPs, true)
 	filesSection := m.filesInfo(m.com.Workspace.WorkingDir(), width, maxFiles, true)
 
 	uv.NewStyledString(
@@ -155,8 +146,6 @@ func (m *UI) drawSidebar(scr uv.Screen, area uv.Rectangle) {
 					filesSection,
 					"",
 					lspSection,
-					"",
-					mcpSection,
 				),
 			),
 	).Draw(scr, area)

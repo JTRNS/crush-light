@@ -13,9 +13,8 @@ type FileCompletionValue struct {
 	Path string
 }
 
-// ResourceCompletionValue represents a MCP resource completion value.
+// ResourceCompletionValue represents a resource completion value.
 type ResourceCompletionValue struct {
-	MCPName  string
 	URI      string
 	Title    string
 	MIMEType string

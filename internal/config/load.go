@@ -384,9 +384,6 @@ func (c *Config) setDefaults(workingDir, dataDir string) {
 	if c.RecentModels == nil {
 		c.RecentModels = make(map[SelectedModelType][]SelectedModel)
 	}
-	if c.MCP == nil {
-		c.MCP = make(map[string]MCPConfig)
-	}
 	if c.LSP == nil {
 		c.LSP = make(map[string]LSPConfig)
 	}

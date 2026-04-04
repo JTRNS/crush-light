@@ -6,7 +6,6 @@ import (
 	"log/slog"
 
 	"github.com/charmbracelet/crush/internal/agent/notify"
-	"github.com/charmbracelet/crush/internal/agent/tools/mcp"
 	"github.com/charmbracelet/crush/internal/app"
 	"github.com/charmbracelet/crush/internal/history"
 	"github.com/charmbracelet/crush/internal/message"
@@ -31,17 +30,6 @@ func wrapEvent(ev any) *pubsub.Payload {
 				State:           e.Payload.State,
 				Error:           e.Payload.Error,
 				DiagnosticCount: e.Payload.DiagnosticCount,
-			},
-		})
-	case pubsub.Event[mcp.Event]:
-		return envelope(pubsub.PayloadTypeMCPEvent, pubsub.Event[proto.MCPEvent]{
-			Type: e.Type,
-			Payload: proto.MCPEvent{
-				Type:      mcpEventTypeToProto(e.Payload.Type),
-				Name:      e.Payload.Name,
-				State:     proto.MCPState(e.Payload.State),
-				Error:     e.Payload.Error,
-				ToolCount: e.Payload.Counts.Tools,
 			},
 		})
 	case pubsub.Event[permission.PermissionRequest]:
@@ -107,21 +95,6 @@ func envelope(payloadType pubsub.PayloadType, inner any) *pubsub.Payload {
 	return &pubsub.Payload{
 		Type:    payloadType,
 		Payload: raw,
-	}
-}
-
-func mcpEventTypeToProto(t mcp.EventType) proto.MCPEventType {
-	switch t {
-	case mcp.EventStateChanged:
-		return proto.MCPEventStateChanged
-	case mcp.EventToolsListChanged:
-		return proto.MCPEventToolsListChanged
-	case mcp.EventPromptsListChanged:
-		return proto.MCPEventPromptsListChanged
-	case mcp.EventResourcesListChanged:
-		return proto.MCPEventResourcesListChanged
-	default:
-		return proto.MCPEventStateChanged
 	}
 }
 
