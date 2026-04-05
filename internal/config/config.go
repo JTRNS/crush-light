@@ -207,6 +207,7 @@ type TUIFeatures struct {
 	LSP *bool `json:"lsp,omitempty" jsonschema:"description=Show LSP-related UI sections and commands,default=true"`
 }
 
+// LSPEnabled reports whether LSP-related TUI features should be shown.
 func (t TUIOptions) LSPEnabled() bool {
 	return t.Features.LSP == nil || *t.Features.LSP
 }
