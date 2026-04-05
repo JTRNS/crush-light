@@ -184,8 +184,8 @@ func (s *ConfigStore) SetTransparentBackground(scope Scope, enabled bool) error 
 	return s.SetConfigField(scope, "options.tui.transparent", enabled)
 }
 
-// SetMCPFeature sets the MCP feature visibility setting and persists it.
-func (s *ConfigStore) SetMCPFeature(scope Scope, enabled bool) error {
+// SetMCPVisibility sets the MCP feature visibility setting and persists it.
+func (s *ConfigStore) SetMCPVisibility(scope Scope, enabled bool) error {
 	if s.config.Options == nil {
 		s.config.Options = &Options{}
 	}
