@@ -189,7 +189,6 @@ func (s *ConfigStore) SetMCPFeature(scope Scope, enabled bool) error {
 	if s.config.Options == nil {
 		s.config.Options = &Options{}
 	}
-	s.config.Options.TUI.Features.MCP = &enabled
 	return s.SetConfigField(scope, "options.tui.features.mcp", enabled)
 }
 
