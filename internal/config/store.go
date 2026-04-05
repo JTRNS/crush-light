@@ -184,14 +184,6 @@ func (s *ConfigStore) SetTransparentBackground(scope Scope, enabled bool) error 
 	return s.SetConfigField(scope, "options.tui.transparent", enabled)
 }
 
-// SetMCPVisibility sets the MCP feature visibility setting and persists it.
-func (s *ConfigStore) SetMCPVisibility(scope Scope, enabled bool) error {
-	if s.config.Options == nil {
-		s.config.Options = &Options{}
-	}
-	return s.SetConfigField(scope, "options.tui.features.mcp", enabled)
-}
-
 // SetProviderAPIKey sets the API key for a provider and persists it.
 func (s *ConfigStore) SetProviderAPIKey(scope Scope, providerID string, apiKey any) error {
 	var providerConfig ProviderConfig
