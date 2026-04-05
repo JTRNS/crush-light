@@ -58,8 +58,10 @@ func (h *header) drawHeader(
 
 	availDetailWidth := width - leftPadding - rightPadding - lipgloss.Width(b.String()) - minHeaderDiags - diagToDetailsSpacing
 	lspErrorCount := 0
-	for _, info := range h.com.Workspace.LSPGetStates() {
-		lspErrorCount += info.DiagnosticCount
+	if h.com.Config().Options.TUI.LSPEnabled() {
+		for _, info := range h.com.Workspace.LSPGetStates() {
+			lspErrorCount += info.DiagnosticCount
+		}
 	}
 	details := renderHeaderDetails(
 		h.com,

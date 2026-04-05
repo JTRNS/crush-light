@@ -1345,6 +1345,24 @@ func (m *UI) handleDialogMsg(msg tea.Msg) tea.Cmd {
 			return util.NewInfoMsg("Transparent background " + status)
 		})
 		m.dialog.CloseDialog(dialog.CommandsID)
+	case dialog.ActionToggleLSPFeature:
+		cmds = append(cmds, func() tea.Msg {
+			cfg := m.com.Config()
+			if cfg == nil {
+				return util.ReportError(errors.New("configuration not found"))()
+			}
+
+			newValue := !cfg.Options.TUI.LSPEnabled()
+			if err := m.com.Workspace.SetConfigField(config.ScopeGlobal, "options.tui.features.lsp", newValue); err != nil {
+				return util.ReportError(err)()
+			}
+
+			if newValue {
+				return util.NewInfoMsg("LSP features enabled")
+			}
+			return util.NewInfoMsg("LSP features hidden")
+		})
+		m.dialog.CloseDialog(dialog.CommandsID)
 	case dialog.ActionQuit:
 		cmds = append(cmds, tea.Quit)
 	case dialog.ActionEnableDockerMCP:
@@ -3382,10 +3400,15 @@ func (m *UI) drawSessionDetails(scr uv.Screen, area uv.Rectangle) {
 	sectionWidth := min(maxSectionWidth, width/3-2) // account for 2 spaces
 	maxItemsPerSection := remainingHeight - 3       // Account for section title and spacing
 
-	lspSection := m.lspInfo(sectionWidth, maxItemsPerSection, false)
 	mcpSection := m.mcpInfo(sectionWidth, maxItemsPerSection, false)
 	filesSection := m.filesInfo(m.com.Workspace.WorkingDir(), sectionWidth, maxItemsPerSection, false)
-	sections := lipgloss.JoinHorizontal(lipgloss.Top, filesSection, " ", lspSection, " ", mcpSection)
+	sectionParts := []string{filesSection}
+	if m.com.Config().Options.TUI.LSPEnabled() {
+		lspSection := m.lspInfo(sectionWidth, maxItemsPerSection, false)
+		sectionParts = append(sectionParts, " ", lspSection)
+	}
+	sectionParts = append(sectionParts, " ", mcpSection)
+	sections := lipgloss.JoinHorizontal(lipgloss.Top, sectionParts...)
 	uv.NewStyledString(
 		s.CompactDetails.View.
 			Width(area.Dx()).
