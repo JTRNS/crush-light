@@ -1352,7 +1352,8 @@ func (m *UI) handleDialogMsg(msg tea.Msg) tea.Cmd {
 				return util.ReportError(errors.New("configuration not found"))()
 			}
 
-			newValue := !cfg.Options.TUI.LSPEnabled()
+			currentValue := cfg.Options.TUI.LSPEnabled()
+			newValue := !currentValue
 			if err := m.com.Workspace.SetConfigField(config.ScopeGlobal, "options.tui.features.lsp", newValue); err != nil {
 				return util.ReportError(err)()
 			}
