@@ -55,7 +55,6 @@ type Commands struct {
 
 	sessionID  string
 	hasSession bool
-	hasTodos   bool
 	hasQueue   bool
 	selected   CommandType
 
@@ -78,13 +77,12 @@ type Commands struct {
 var _ Dialog = (*Commands)(nil)
 
 // NewCommands creates a new commands dialog.
-func NewCommands(com *common.Common, sessionID string, hasSession, hasTodos, hasQueue bool, customCommands []commands.CustomCommand, mcpPrompts []commands.MCPPrompt) (*Commands, error) {
+func NewCommands(com *common.Common, sessionID string, hasSession, hasQueue bool, customCommands []commands.CustomCommand, mcpPrompts []commands.MCPPrompt) (*Commands, error) {
 	c := &Commands{
 		com:            com,
 		selected:       SystemCommands,
 		sessionID:      sessionID,
 		hasSession:     hasSession,
-		hasTodos:       hasTodos,
 		hasQueue:       hasQueue,
 		customCommands: customCommands,
 		mcpPrompts:     mcpPrompts,
@@ -488,17 +486,8 @@ func (c *Commands) defaultCommands() []*CommandItem {
 		commands = append(commands, NewCommandItem(c.com.Styles, "disable_docker_mcp", "Disable Docker MCP Catalog", "", ActionDisableDockerMCP{}))
 	}
 
-	if c.hasTodos || c.hasQueue {
-		var label string
-		switch {
-		case c.hasTodos && c.hasQueue:
-			label = "Toggle To-Dos/Queue"
-		case c.hasQueue:
-			label = "Toggle Queue"
-		default:
-			label = "Toggle To-Dos"
-		}
-		commands = append(commands, NewCommandItem(c.com.Styles, "toggle_pills", label, "ctrl+t", ActionTogglePills{}))
+	if c.hasQueue {
+		commands = append(commands, NewCommandItem(c.com.Styles, "toggle_pills", "Toggle Queue", "ctrl+t", ActionTogglePills{}))
 	}
 
 	// Add a command for toggling notifications.

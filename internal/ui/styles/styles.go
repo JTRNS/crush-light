@@ -36,10 +36,6 @@ const (
 
 	SectionSeparator string = "─"
 
-	TodoCompletedIcon  string = "✓"
-	TodoPendingIcon    string = "•"
-	TodoInProgressIcon string = "→"
-
 	ImageIcon string = "■"
 	TextIcon  string = "≡"
 
@@ -307,12 +303,6 @@ type Styles struct {
 		// Agentic fetch styles
 		AgenticFetchPromptTag lipgloss.Style // Agentic fetch prompt tag (green background, bold)
 
-		// Todo styles
-		TodoRatio          lipgloss.Style // Todo ratio (e.g., "2/5")
-		TodoCompletedIcon  lipgloss.Style // Completed todo icon
-		TodoInProgressIcon lipgloss.Style // In-progress todo icon
-		TodoPendingIcon    lipgloss.Style // Pending todo icon
-
 		// MCP tools
 		MCPName     lipgloss.Style // The mcp name
 		MCPToolName lipgloss.Style // The mcp tool name
@@ -444,7 +434,6 @@ type Styles struct {
 		HelpKey         lipgloss.Style // Keystroke hint style
 		HelpText        lipgloss.Style // Help action text style
 		Area            lipgloss.Style // Pills area container
-		TodoSpinner     lipgloss.Style // Todo spinner style
 	}
 }
 
@@ -1164,12 +1153,6 @@ func DefaultStyles() Styles {
 	// Agentic fetch styles
 	s.Tool.AgenticFetchPromptTag = base.Bold(true).Padding(0, 1).MarginLeft(2).Background(green).Foreground(border)
 
-	// Todo styles
-	s.Tool.TodoRatio = base.Foreground(blueDark)
-	s.Tool.TodoCompletedIcon = base.Foreground(green)
-	s.Tool.TodoInProgressIcon = base.Foreground(greenDark)
-	s.Tool.TodoPendingIcon = base.Foreground(fgMuted)
-
 	// MCP styles
 	s.Tool.MCPName = base.Foreground(blue)
 	s.Tool.MCPToolName = base.Foreground(blueDark)
@@ -1362,7 +1345,6 @@ func DefaultStyles() Styles {
 	s.Pills.HelpKey = s.Muted
 	s.Pills.HelpText = s.Subtle
 	s.Pills.Area = base
-	s.Pills.TodoSpinner = base.Foreground(greenDark)
 
 	return s
 }
