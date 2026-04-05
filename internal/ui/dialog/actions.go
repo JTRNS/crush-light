@@ -52,6 +52,7 @@ type (
 	ActionExternalEditor              struct{}
 	ActionToggleNotifications         struct{}
 	ActionToggleLSPFeature            struct{}
+	ActionToggleMCPFeature            struct{}
 	ActionToggleTransparentBackground struct{}
 	ActionInitializeProject           struct{}
 	ActionSummarize                   struct {

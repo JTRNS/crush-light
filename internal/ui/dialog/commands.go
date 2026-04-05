@@ -483,14 +483,20 @@ func (c *Commands) defaultCommands() []*CommandItem {
 	commands = append(commands, NewCommandItem(c.com.Styles, "toggle_lsp_features", lspToggleLabel, "", ActionToggleLSPFeature{}))
 
 	// Add Docker MCP command if available and not already enabled.
-	if !cfg.IsDockerMCPEnabled() && c.dockerMCPAvailable != nil && *c.dockerMCPAvailable {
+	if cfg.Options.TUI.MCPEnabled() && !cfg.IsDockerMCPEnabled() && c.dockerMCPAvailable != nil && *c.dockerMCPAvailable {
 		commands = append(commands, NewCommandItem(c.com.Styles, "enable_docker_mcp", "Enable Docker MCP Catalog", "", ActionEnableDockerMCP{}))
 	}
 
 	// Add disable Docker MCP command if it's currently enabled
-	if cfg.IsDockerMCPEnabled() {
+	if cfg.Options.TUI.MCPEnabled() && cfg.IsDockerMCPEnabled() {
 		commands = append(commands, NewCommandItem(c.com.Styles, "disable_docker_mcp", "Disable Docker MCP Catalog", "", ActionDisableDockerMCP{}))
 	}
+
+	mcpToggleLabel := "Show MCP Features"
+	if cfg.Options.TUI.MCPEnabled() {
+		mcpToggleLabel = "Hide MCP Features"
+	}
+	commands = append(commands, NewCommandItem(c.com.Styles, "toggle_mcp_features", mcpToggleLabel, "", ActionToggleMCPFeature{}))
 
 	if c.hasQueue {
 		commands = append(commands, NewCommandItem(c.com.Styles, "toggle_pills", "Toggle Queue", "ctrl+t", ActionTogglePills{}))

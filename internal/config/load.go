@@ -77,6 +77,7 @@ func Load(workingDir, dataDir string, debug bool) (*ConfigStore, error) {
 		assignIfNil(&cfg.Options.TUI.Transparent, true)
 	}
 	assignIfNil(&cfg.Options.TUI.Features.LSP, true)
+	assignIfNil(&cfg.Options.TUI.Features.MCP, true)
 
 	// Load known providers, this loads the config from catwalk
 	providers, err := Providers(cfg)

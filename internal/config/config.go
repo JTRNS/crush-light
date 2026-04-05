@@ -205,11 +205,17 @@ type TUIOptions struct {
 
 type TUIFeatures struct {
 	LSP *bool `json:"lsp,omitempty" jsonschema:"description=Show LSP-related UI sections and commands,default=true"`
+	MCP *bool `json:"mcp,omitempty" jsonschema:"description=Show MCP-related UI sections and commands,default=true"`
 }
 
 // LSPEnabled reports whether LSP-related TUI features should be shown.
 func (t TUIOptions) LSPEnabled() bool {
 	return t.Features.LSP == nil || *t.Features.LSP
+}
+
+// MCPEnabled reports whether MCP-related TUI features should be shown.
+func (t TUIOptions) MCPEnabled() bool {
+	return t.Features.MCP == nil || *t.Features.MCP
 }
 
 // Completions defines options for the completions UI.
