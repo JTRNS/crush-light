@@ -417,7 +417,7 @@ type Styles struct {
 		Deleting lipgloss.Style
 	}
 
-	// Pills styles for todo/queue pills
+	// Pills styles for queue pills.
 	Pills struct {
 		Base            lipgloss.Style // Base pill style with padding
 		Focused         lipgloss.Style // Focused pill with visible border

@@ -129,6 +129,11 @@ type (
 		Content     string
 		Attachments []message.Attachment
 	}
+	// promptQueueUpdatedMsg is sent when queue size should be refreshed.
+	promptQueueUpdatedMsg struct {
+		SessionID string
+		Count     int
+	}
 
 	// closeDialogMsg is sent to close the current dialog.
 	closeDialogMsg struct{}
@@ -537,6 +542,11 @@ func (m *UI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case sendMessageMsg:
 		cmds = append(cmds, m.sendMessage(msg.Content, msg.Attachments...))
+	case promptQueueUpdatedMsg:
+		if m.hasSession() && m.session.ID == msg.SessionID && msg.Count != m.promptQueue {
+			m.promptQueue = msg.Count
+			m.updateLayoutAndSize()
+		}
 
 	case userCommandsLoadedMsg:
 		m.customCommands = msg.Commands
@@ -2995,7 +3005,10 @@ func (m *UI) sendMessage(content string, attachments ...message.Attachment) tea.
 				Msg:  fmt.Sprintf("Failed to run agent: %v", err),
 			}
 		}
-		return nil
+		return promptQueueUpdatedMsg{
+			SessionID: sessionID,
+			Count:     m.com.Workspace.AgentQueuedPrompts(sessionID),
+		}
 	})
 	return tea.Batch(cmds...)
 }
