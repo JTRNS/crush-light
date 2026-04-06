@@ -264,6 +264,10 @@ func (w *AppWorkspace) SetCompactMode(scope config.Scope, enabled bool) error {
 	return w.store.SetCompactMode(scope, enabled)
 }
 
+func (w *AppWorkspace) SetTransparentBackground(scope config.Scope, enabled bool) error {
+	return w.store.SetTransparentBackground(scope, enabled)
+}
+
 func (w *AppWorkspace) SetLSPEnabled(scope config.Scope, enabled bool) error {
 	return w.store.SetLSPEnabled(scope, enabled)
 }

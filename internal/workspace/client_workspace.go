@@ -415,6 +415,14 @@ func (w *ClientWorkspace) SetCompactMode(scope config.Scope, enabled bool) error
 	return err
 }
 
+func (w *ClientWorkspace) SetTransparentBackground(scope config.Scope, enabled bool) error {
+	err := w.client.SetConfigField(context.Background(), w.workspaceID(), scope, "options.tui.transparent", enabled)
+	if err == nil {
+		w.refreshWorkspace()
+	}
+	return err
+}
+
 func (w *ClientWorkspace) SetLSPEnabled(scope config.Scope, enabled bool) error {
 	err := w.client.SetConfigField(context.Background(), w.workspaceID(), scope, "options.tui.features.lsp", enabled)
 	if err == nil {
