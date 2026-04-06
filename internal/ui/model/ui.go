@@ -2235,9 +2235,27 @@ func (m *UI) ShortHelp() []key.Binding {
 			}
 		case uiFocusSessions:
 			tab.SetHelp("tab", "focus editor")
-			resume := key.NewBinding(key.WithKeys("enter"), key.WithHelp("enter", "resume"))
-			updown := key.NewBinding(key.WithKeys("up", "down"), key.WithHelp("↑↓", "choose"))
-			binds = append(binds, tab, updown, resume)
+			switch m.landingSessions.mode {
+			case landingSessionsModeDeleting:
+				binds = append(binds,
+					m.landingSessions.keyMap.ConfirmDelete,
+					m.landingSessions.keyMap.CancelDelete,
+				)
+			case landingSessionsModeUpdating:
+				binds = append(binds,
+					m.landingSessions.keyMap.ConfirmRename,
+					m.landingSessions.keyMap.CancelRename,
+				)
+			default:
+				updown := key.NewBinding(key.WithKeys("up", "down"), key.WithHelp("↑↓", "choose"))
+				binds = append(binds,
+					tab,
+					updown,
+					m.landingSessions.keyMap.Select,
+					m.landingSessions.keyMap.Rename,
+					m.landingSessions.keyMap.Delete,
+				)
+			}
 		}
 		binds = append(binds, commands)
 	default:

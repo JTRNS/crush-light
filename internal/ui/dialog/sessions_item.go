@@ -188,6 +188,16 @@ func NewSessionItems(t *styles.Styles, sessions ...session.Session) []list.Filte
 	return sessionItems(t, sessionsModeNormal, sessions...)
 }
 
+// NewSessionItemsDeleting creates session list items styled for delete confirmation.
+func NewSessionItemsDeleting(t *styles.Styles, sessions ...session.Session) []list.FilterableItem {
+	return sessionItems(t, sessionsModeDeleting, sessions...)
+}
+
+// NewSessionItemsUpdating creates session list items with inline rename inputs.
+func NewSessionItemsUpdating(t *styles.Styles, sessions ...session.Session) []list.FilterableItem {
+	return sessionItems(t, sessionsModeUpdating, sessions...)
+}
+
 // sessionItems takes a slice of [session.Session]s and convert them to a slice
 // of [ListItem]s.
 func sessionItems(t *styles.Styles, mode sessionsMode, sessions ...session.Session) []list.FilterableItem {
