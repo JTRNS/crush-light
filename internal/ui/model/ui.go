@@ -1332,7 +1332,7 @@ func (m *UI) handleDialogMsg(msg tea.Msg) tea.Cmd {
 			}
 
 			newValue := !cfg.Options.TUI.MCPEnabled()
-			if err := m.com.Workspace.SetConfigField(config.ScopeGlobal, "options.tui.features.mcp", newValue); err != nil {
+			if err := m.com.Workspace.SetMCPEnabled(config.ScopeGlobal, newValue); err != nil {
 				return util.ReportError(err)()
 			}
 
@@ -1370,9 +1370,8 @@ func (m *UI) handleDialogMsg(msg tea.Msg) tea.Cmd {
 				return util.ReportError(errors.New("configuration not found"))()
 			}
 
-			currentValue := cfg.Options.TUI.LSPEnabled()
-			newValue := !currentValue
-			if err := m.com.Workspace.SetConfigField(config.ScopeGlobal, "options.tui.features.lsp", newValue); err != nil {
+			newValue := !cfg.Options.TUI.LSPEnabled()
+			if err := m.com.Workspace.SetLSPEnabled(config.ScopeGlobal, newValue); err != nil {
 				return util.ReportError(err)()
 			}
 

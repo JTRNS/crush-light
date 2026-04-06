@@ -184,6 +184,24 @@ func (s *ConfigStore) SetTransparentBackground(scope Scope, enabled bool) error 
 	return s.SetConfigField(scope, "options.tui.transparent", enabled)
 }
 
+// SetLSPEnabled sets the LSP UI visibility flag and persists it.
+func (s *ConfigStore) SetLSPEnabled(scope Scope, enabled bool) error {
+	if s.config.Options == nil {
+		s.config.Options = &Options{}
+	}
+	s.config.Options.TUI.Features.LSP = &enabled
+	return s.SetConfigField(scope, "options.tui.features.lsp", enabled)
+}
+
+// SetMCPEnabled sets the MCP UI visibility flag and persists it.
+func (s *ConfigStore) SetMCPEnabled(scope Scope, enabled bool) error {
+	if s.config.Options == nil {
+		s.config.Options = &Options{}
+	}
+	s.config.Options.TUI.Features.MCP = &enabled
+	return s.SetConfigField(scope, "options.tui.features.mcp", enabled)
+}
+
 // SetProviderAPIKey sets the API key for a provider and persists it.
 func (s *ConfigStore) SetProviderAPIKey(scope Scope, providerID string, apiKey any) error {
 	var providerConfig ProviderConfig

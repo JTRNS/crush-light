@@ -264,6 +264,14 @@ func (w *AppWorkspace) SetCompactMode(scope config.Scope, enabled bool) error {
 	return w.store.SetCompactMode(scope, enabled)
 }
 
+func (w *AppWorkspace) SetLSPEnabled(scope config.Scope, enabled bool) error {
+	return w.store.SetLSPEnabled(scope, enabled)
+}
+
+func (w *AppWorkspace) SetMCPEnabled(scope config.Scope, enabled bool) error {
+	return w.store.SetMCPEnabled(scope, enabled)
+}
+
 func (w *AppWorkspace) SetProviderAPIKey(scope config.Scope, providerID string, apiKey any) error {
 	return w.store.SetProviderAPIKey(scope, providerID, apiKey)
 }
