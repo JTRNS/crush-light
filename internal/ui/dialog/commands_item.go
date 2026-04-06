@@ -1,6 +1,8 @@
 package dialog
 
 import (
+	"strings"
+
 	"github.com/charmbracelet/crush/internal/ui/styles"
 	"github.com/sahilm/fuzzy"
 )
@@ -9,6 +11,7 @@ import (
 type CommandItem struct {
 	id       string
 	title    string
+	aliases  []string
 	shortcut string
 	action   Action
 	t        *styles.Styles
@@ -20,11 +23,12 @@ type CommandItem struct {
 var _ ListItem = &CommandItem{}
 
 // NewCommandItem creates a new CommandItem.
-func NewCommandItem(t *styles.Styles, id, title, shortcut string, action Action) *CommandItem {
+func NewCommandItem(t *styles.Styles, id, title, shortcut string, action Action, aliases ...string) *CommandItem {
 	return &CommandItem{
 		id:       id,
 		t:        t,
 		title:    title,
+		aliases:  aliases,
 		shortcut: shortcut,
 		action:   action,
 	}
@@ -32,7 +36,10 @@ func NewCommandItem(t *styles.Styles, id, title, shortcut string, action Action)
 
 // Filter implements ListItem.
 func (c *CommandItem) Filter() string {
-	return c.title
+	if len(c.aliases) == 0 {
+		return c.title
+	}
+	return c.title + " " + strings.Join(c.aliases, " ")
 }
 
 // ID implements ListItem.
