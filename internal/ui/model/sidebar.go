@@ -104,24 +104,22 @@ func getDynamicHeightLimits(availableHeight int) (maxFiles, maxLSPs, maxMCPs int
 // sidebar renders the chat sidebar containing session title, working
 // directory, model info, file list, LSP status, and MCP status.
 func (m *UI) drawSidebar(scr uv.Screen, area uv.Rectangle) {
-	if m.session == nil {
-		return
-	}
-
 	t := m.com.Styles
 	width := area.Dx()
 	height := area.Dy()
 
-	title := t.Muted.Width(width).MaxHeight(2).Render(m.session.Title)
+	var blocks []string
+	if m.session != nil {
+		title := t.Muted.Width(width).MaxHeight(2).Render(m.session.Title)
+		blocks = append(blocks, title, "")
+	}
 	cwd := common.PrettyPath(t, m.com.Workspace.WorkingDir(), width)
-	blocks := []string{
-		title,
-		"",
+	blocks = append(blocks,
 		cwd,
 		"",
 		m.modelInfo(width),
 		"",
-	}
+	)
 
 	sidebarHeader := lipgloss.JoinVertical(
 		lipgloss.Left,
@@ -134,6 +132,10 @@ func (m *UI) drawSidebar(scr uv.Screen, area uv.Rectangle) {
 
 	filesSection := m.filesInfo(m.com.Workspace.WorkingDir(), width, maxFiles, true)
 	sections := lipgloss.JoinVertical(lipgloss.Left, sidebarHeader, filesSection)
+	if m.session == nil {
+		// No session yet — skip the empty files section.
+		sections = sidebarHeader
+	}
 	if m.com.Config().Options.TUI.LSPEnabled() {
 		lspSection := m.lspInfo(width, maxLSPs, true)
 		sections = lipgloss.JoinVertical(lipgloss.Left, sections, "", lspSection)

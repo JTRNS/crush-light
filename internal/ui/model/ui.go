@@ -1995,10 +1995,12 @@ func (m *UI) Draw(scr uv.Screen, area uv.Rectangle) *tea.Cursor {
 
 	case uiLanding:
 		m.drawHeader(scr, layout.header)
+		m.drawSidebar(scr, layout.sidebar)
 		main := uv.NewStyledString(m.landingView())
 		main.Draw(scr, layout.main)
 
-		editor := uv.NewStyledString(m.renderEditorView(scr.Bounds().Dx()))
+		editorWidth := scr.Bounds().Dx() - layout.sidebar.Dx()
+		editor := uv.NewStyledString(m.renderEditorView(editorWidth))
 		editor.Draw(scr, layout.editor)
 
 	case uiChat:
@@ -2465,7 +2467,7 @@ func (m *UI) generateLayout(w, h int) uiLayout {
 	appRect.Min.X += 1
 	appRect.Max.X -= 1
 
-	if slices.Contains([]uiState{uiOnboarding, uiInitialize, uiLanding}, m.state) {
+	if slices.Contains([]uiState{uiOnboarding, uiInitialize}, m.state) {
 		// extra padding on left and right for these states
 		appRect.Min.X += 1
 		appRect.Max.X -= 1
@@ -2494,20 +2496,21 @@ func (m *UI) generateLayout(w, h int) uiLayout {
 	case uiLanding:
 		// Layout
 		//
-		// header
-		// ------
-		// main
-		// ------
-		// editor
-		// ------
+		// ------|---
+		// main  |
+		// ------| side
+		// editor|
+		// ----------
 		// help
 		headerRect, mainRect := layout.SplitVertical(appRect, layout.Fixed(landingHeaderHeight))
+		mainRect, sideRect := layout.SplitHorizontal(mainRect, layout.Fixed(mainRect.Dx()-sidebarWidth))
+		sideRect.Min.X += 1
 		mainRect, editorRect := layout.SplitVertical(mainRect, layout.Fixed(mainRect.Dy()-editorHeight))
-		// Remove extra padding from editor (but keep it for header and main)
-		editorRect.Min.X -= 1
-		editorRect.Max.X += 1
+		mainRect.Max.X -= 1
+		uiLayout.main.Max.Y -= 1
 		uiLayout.header = headerRect
 		uiLayout.main = mainRect
+		uiLayout.sidebar = sideRect
 		uiLayout.editor = editorRect
 
 	case uiChat:

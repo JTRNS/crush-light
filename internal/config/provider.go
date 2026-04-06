@@ -88,9 +88,7 @@ func UpdateProviders(pathOrURL string) error {
 	return nil
 }
 
-var (
-	catwalkSyncer = &catwalkSync{}
-)
+var catwalkSyncer = &catwalkSync{}
 
 // Providers returns the list of providers, taking into account cached results
 // and whether or not auto update is enabled.
