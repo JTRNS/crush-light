@@ -44,9 +44,7 @@ import (
 	"github.com/charmbracelet/crush/internal/ui/completions"
 	"github.com/charmbracelet/crush/internal/ui/dialog"
 	fimage "github.com/charmbracelet/crush/internal/ui/image"
-	"github.com/charmbracelet/crush/internal/ui/logo"
 	"github.com/charmbracelet/crush/internal/ui/notification"
-	"github.com/charmbracelet/crush/internal/ui/styles"
 	"github.com/charmbracelet/crush/internal/ui/util"
 	"github.com/charmbracelet/crush/internal/version"
 	"github.com/charmbracelet/crush/internal/workspace"
@@ -217,9 +215,6 @@ type UI struct {
 
 	// mcp
 	mcpStates map[string]mcp.ClientInfo
-
-	// sidebarLogo keeps a cached version of the sidebar sidebarLogo.
-	sidebarLogo string
 
 	// Notification state
 	notifyBackend       notification.Backend
@@ -2402,9 +2397,6 @@ func (m *UI) updateSize() {
 	// Handle different app states
 	switch m.state {
 	case uiChat:
-		if !m.isCompact {
-			m.cacheSidebarLogo(m.layout.sidebar.Dx())
-		}
 	}
 }
 
@@ -2421,7 +2413,7 @@ func (m *UI) generateLayout(w, h int) uiLayout {
 	// The sidebar width
 	sidebarWidth := 30
 	// The header height
-	const landingHeaderHeight = 4
+	const landingHeaderHeight = 0
 
 	var helpKeyMap help.KeyMap = m
 	if m.status != nil && m.status.ShowingAll() {
@@ -2838,11 +2830,6 @@ func (m *UI) renderEditorView(width int) string {
 		m.textarea.View(),
 		"", // margin at bottom of editor
 	}, "\n")
-}
-
-// cacheSidebarLogo renders and caches the sidebar logo at the specified width.
-func (m *UI) cacheSidebarLogo(width int) {
-	m.sidebarLogo = renderLogo(m.com.Styles, true, width)
 }
 
 // sendMessage sends a message with the given content and attachments.
@@ -3497,16 +3484,4 @@ func (m *UI) disableDockerMCP() tea.Msg {
 	}
 
 	return util.NewInfoMsg("Docker MCP disabled successfully")
-}
-
-// renderLogo renders the Crush logo with the given styles and dimensions.
-func renderLogo(t *styles.Styles, compact bool, width int) string {
-	return logo.Render(t, version.Version, compact, logo.Opts{
-		FieldColor:   t.LogoFieldColor,
-		TitleColorA:  t.LogoTitleColorA,
-		TitleColorB:  t.LogoTitleColorB,
-		CharmColor:   t.LogoCharmColor,
-		VersionColor: t.LogoVersionColor,
-		Width:        width,
-	})
 }

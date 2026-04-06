@@ -69,7 +69,6 @@ type Styles struct {
 
 	// Header
 	Header struct {
-		Charm        lipgloss.Style // Style for "Charm™" label
 		Diagonals    lipgloss.Style // Style for diagonal separators (╱)
 		Percentage   lipgloss.Style // Style for context percentage
 		Keystroke    lipgloss.Style // Style for keystroke hints (e.g., "ctrl+d")
@@ -149,13 +148,6 @@ type Styles struct {
 
 	// Background
 	Background color.Color
-
-	// Logo
-	LogoFieldColor   color.Color
-	LogoTitleColorA  color.Color
-	LogoTitleColorB  color.Color
-	LogoCharmColor   color.Color
-	LogoVersionColor color.Color
 
 	// Colors - semantic colors for tool rendering.
 	Primary       color.Color
@@ -1074,7 +1066,6 @@ func DefaultStyles() Styles {
 	s.TagInfo = s.TagBase.Background(blueLight)
 
 	// Compact header styles
-	s.Header.Charm = base.Foreground(secondary)
 	s.Header.Diagonals = base.Foreground(primary)
 	s.Header.Percentage = s.Muted
 	s.Header.Keystroke = s.Muted
@@ -1181,13 +1172,6 @@ func DefaultStyles() Styles {
 	s.EditorPromptNormalBlurred = s.EditorPromptNormalFocused.Foreground(fgMuted)
 	s.RadioOn = s.HalfMuted.SetString(RadioOn)
 	s.RadioOff = s.HalfMuted.SetString(RadioOff)
-
-	// Logo colors
-	s.LogoFieldColor = primary
-	s.LogoTitleColorA = secondary
-	s.LogoTitleColorB = primary
-	s.LogoCharmColor = secondary
-	s.LogoVersionColor = primary
 
 	// Section
 	s.Section.Title = s.Subtle
