@@ -132,14 +132,16 @@ func (m *UI) drawSidebar(scr uv.Screen, area uv.Rectangle) {
 	remainingHeight := remainingHeightArea.Dy() - 10
 	maxFiles, maxLSPs, maxMCPs := getDynamicHeightLimits(remainingHeight)
 
-	mcpSection := m.mcpInfo(width, maxMCPs, true)
 	filesSection := m.filesInfo(m.com.Workspace.WorkingDir(), width, maxFiles, true)
 	sections := lipgloss.JoinVertical(lipgloss.Left, sidebarHeader, filesSection)
 	if m.com.Config().Options.TUI.LSPEnabled() {
 		lspSection := m.lspInfo(width, maxLSPs, true)
 		sections = lipgloss.JoinVertical(lipgloss.Left, sections, "", lspSection)
 	}
-	sections = lipgloss.JoinVertical(lipgloss.Left, sections, "", mcpSection)
+	if m.com.Config().Options.TUI.MCPEnabled() {
+		mcpSection := m.mcpInfo(width, maxMCPs, true)
+		sections = lipgloss.JoinVertical(lipgloss.Left, sections, "", mcpSection)
+	}
 
 	uv.NewStyledString(
 		lipgloss.NewStyle().

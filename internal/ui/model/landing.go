@@ -35,11 +35,21 @@ func (m *UI) landingView() string {
 
 	mcpLspSectionWidth := min(30, (width-1)/2)
 
-	mcpSection := m.mcpInfo(mcpLspSectionWidth, max(1, remainingHeightArea.Dy()), false)
-	content := mcpSection
+	var lspSection, mcpSection string
 	if m.com.Config().Options.TUI.LSPEnabled() {
-		lspSection := m.lspInfo(mcpLspSectionWidth, max(1, remainingHeightArea.Dy()), false)
+		lspSection = m.lspInfo(mcpLspSectionWidth, max(1, remainingHeightArea.Dy()), false)
+	}
+	if m.com.Config().Options.TUI.MCPEnabled() {
+		mcpSection = m.mcpInfo(mcpLspSectionWidth, max(1, remainingHeightArea.Dy()), false)
+	}
+	var content string
+	switch {
+	case lspSection != "" && mcpSection != "":
 		content = lipgloss.JoinHorizontal(lipgloss.Left, lspSection, " ", mcpSection)
+	case lspSection != "":
+		content = lspSection
+	default:
+		content = mcpSection
 	}
 
 	return lipgloss.NewStyle().

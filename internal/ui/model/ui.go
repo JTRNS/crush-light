@@ -1324,6 +1324,24 @@ func (m *UI) handleDialogMsg(msg tea.Msg) tea.Cmd {
 			return util.NewInfoMsg("Thinking mode " + status)
 		})
 		m.dialog.CloseDialog(dialog.CommandsID)
+	case dialog.ActionToggleMCPFeature:
+		cmds = append(cmds, func() tea.Msg {
+			cfg := m.com.Config()
+			if cfg == nil {
+				return util.ReportError(errors.New("configuration not found"))()
+			}
+
+			newValue := !cfg.Options.TUI.MCPEnabled()
+			if err := m.com.Workspace.SetConfigField(config.ScopeGlobal, "options.tui.features.mcp", newValue); err != nil {
+				return util.ReportError(err)()
+			}
+
+			if newValue {
+				return util.NewInfoMsg("MCP features enabled")
+			}
+			return util.NewInfoMsg("MCP features hidden")
+		})
+		m.dialog.CloseDialog(dialog.CommandsID)
 	case dialog.ActionToggleTransparentBackground:
 		cmds = append(cmds, func() tea.Msg {
 			cfg := m.com.Config()
@@ -3401,14 +3419,16 @@ func (m *UI) drawSessionDetails(scr uv.Screen, area uv.Rectangle) {
 	sectionWidth := min(maxSectionWidth, width/3-2) // account for 2 spaces
 	maxItemsPerSection := remainingHeight - 3       // Account for section title and spacing
 
-	mcpSection := m.mcpInfo(sectionWidth, maxItemsPerSection, false)
 	filesSection := m.filesInfo(m.com.Workspace.WorkingDir(), sectionWidth, maxItemsPerSection, false)
 	sectionParts := []string{filesSection}
 	if m.com.Config().Options.TUI.LSPEnabled() {
 		lspSection := m.lspInfo(sectionWidth, maxItemsPerSection, false)
 		sectionParts = append(sectionParts, " ", lspSection)
 	}
-	sectionParts = append(sectionParts, " ", mcpSection)
+	if m.com.Config().Options.TUI.MCPEnabled() {
+		mcpSection := m.mcpInfo(sectionWidth, maxItemsPerSection, false)
+		sectionParts = append(sectionParts, " ", mcpSection)
+	}
 	sections := lipgloss.JoinHorizontal(lipgloss.Top, sectionParts...)
 	uv.NewStyledString(
 		s.CompactDetails.View.
