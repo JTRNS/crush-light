@@ -499,6 +499,11 @@ func (m *UI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.landingSessions.SetSessions(msg.sessions)
 
 	case selectSessionMsg:
+		// Transition focus to the editor immediately so that by the time the
+		// session finishes loading the textarea is ready for input.
+		m.focus = uiFocusEditor
+		m.landingSessions.Blur()
+		cmds = append(cmds, m.textarea.Focus())
 		cmds = append(cmds, m.loadSession(msg.sessionID))
 
 	case loadSessionMsg:
