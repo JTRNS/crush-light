@@ -1280,6 +1280,10 @@ func (m *UI) handleDialogMsg(msg tea.Msg) tea.Cmd {
 		if cmd := m.openDialog(msg.DialogID); cmd != nil {
 			cmds = append(cmds, cmd)
 		}
+	case dialog.ActionOpenToolCall:
+		if cmd := m.openToolCallInChat(msg.ToolCallID); cmd != nil {
+			cmds = append(cmds, cmd)
+		}
 
 	// Command dialog messages.
 	case dialog.ActionToggleNotifications:
@@ -3073,6 +3077,10 @@ func (m *UI) openDialog(id string) tea.Cmd {
 		if cmd := m.openReasoningDialog(); cmd != nil {
 			cmds = append(cmds, cmd)
 		}
+	case dialog.ToolCallsID:
+		if cmd := m.openToolCallsDialog(); cmd != nil {
+			cmds = append(cmds, cmd)
+		}
 	case dialog.FilePickerID:
 		if cmd := m.openFilesDialog(); cmd != nil {
 			cmds = append(cmds, cmd)
@@ -3198,6 +3206,61 @@ func (m *UI) openFilesDialog() tea.Cmd {
 	m.dialog.OpenDialog(filePicker)
 
 	return cmd
+}
+
+// openToolCallsDialog opens the tool calls dialog for the active session.
+func (m *UI) openToolCallsDialog() tea.Cmd {
+	if !m.hasSession() {
+		return nil
+	}
+	if m.dialog.ContainsDialog(dialog.ToolCallsID) {
+		m.dialog.BringToFront(dialog.ToolCallsID)
+		return nil
+	}
+
+	msgs, err := m.com.Workspace.ListMessages(context.Background(), m.session.ID)
+	if err != nil {
+		return util.ReportError(err)
+	}
+
+	toolCallsDialog, err := dialog.NewToolCalls(m.com, msgs)
+	if err != nil {
+		return util.ReportError(err)
+	}
+	m.dialog.OpenDialog(toolCallsDialog)
+	return nil
+}
+
+// openToolCallInChat closes tool call dialog and focuses selected call in chat.
+func (m *UI) openToolCallInChat(toolCallID string) tea.Cmd {
+	if toolCallID == "" {
+		return nil
+	}
+	m.dialog.CloseDialog(dialog.ToolCallsID)
+	m.focus = uiFocusMain
+	m.textarea.Blur()
+	m.chat.Focus()
+
+	if !m.hasSession() {
+		return nil
+	}
+	item := m.chat.MessageItem(toolCallID)
+	if item == nil {
+		if msgs, err := m.com.Workspace.ListMessages(context.Background(), m.session.ID); err == nil {
+			if cmd := m.setSessionMessages(msgs); cmd != nil {
+				_ = cmd
+			}
+			item = m.chat.MessageItem(toolCallID)
+		}
+	}
+	if item == nil {
+		return util.ReportWarn("Tool call not found in current chat")
+	}
+	if idx, ok := m.chat.IndexOfMessageItem(toolCallID); ok {
+		m.chat.SetSelected(idx)
+		return m.chat.ScrollToSelectedAndAnimate()
+	}
+	return nil
 }
 
 // openPermissionsDialog opens the permissions dialog for a permission request.

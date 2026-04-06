@@ -55,7 +55,10 @@ type (
 	ActionToggleMCPFeature            struct{}
 	ActionToggleTransparentBackground struct{}
 	ActionInitializeProject           struct{}
-	ActionSummarize                   struct {
+	ActionOpenToolCall                struct {
+		ToolCallID string
+	}
+	ActionSummarize struct {
 		SessionID string
 	}
 	// ActionSelectReasoningEffort is a message indicating a reasoning effort

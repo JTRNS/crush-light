@@ -479,6 +479,12 @@ func (m *Chat) MessageItem(id string) chat.MessageItem {
 	return item
 }
 
+// IndexOfMessageItem returns the list index for a message item ID.
+func (m *Chat) IndexOfMessageItem(id string) (int, bool) {
+	idx, ok := m.idInxMap[id]
+	return idx, ok
+}
+
 // ToggleExpandedSelectedItem expands the selected message item if it is expandable.
 func (m *Chat) ToggleExpandedSelectedItem() {
 	if expandable, ok := m.list.SelectedItem().(chat.Expandable); ok {
