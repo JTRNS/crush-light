@@ -7,8 +7,8 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	"github.com/charmbracelet/crush/internal/message"
-	"github.com/charmbracelet/crush/internal/ui/anim"
 	"github.com/charmbracelet/crush/internal/ui/common"
+	"github.com/charmbracelet/crush/internal/ui/spinner"
 	"github.com/charmbracelet/crush/internal/ui/styles"
 	"github.com/charmbracelet/x/ansi"
 )
@@ -30,7 +30,7 @@ type AssistantMessageItem struct {
 
 	message           *message.Message
 	sty               *styles.Styles
-	anim              *anim.Anim
+	anim              *spinner.Anim
 	thinkingExpanded  bool
 	thinkingBoxHeight int // Tracks the rendered thinking box height for click detection.
 }
@@ -45,7 +45,7 @@ func NewAssistantMessageItem(sty *styles.Styles, message *message.Message) Messa
 		sty:                      sty,
 	}
 
-	a.anim = anim.New(anim.Settings{
+	a.anim = spinner.New(spinner.Settings{
 		ID:          a.ID(),
 		Size:        15,
 		GradColorA:  sty.Primary,
@@ -65,7 +65,7 @@ func (a *AssistantMessageItem) StartAnimation() tea.Cmd {
 }
 
 // Animate progresses the assistant message animation if it should be spinning.
-func (a *AssistantMessageItem) Animate(msg anim.StepMsg) tea.Cmd {
+func (a *AssistantMessageItem) Animate(msg spinner.StepMsg) tea.Cmd {
 	if !a.isSpinning() {
 		return nil
 	}

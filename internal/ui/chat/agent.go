@@ -9,7 +9,7 @@ import (
 	"charm.land/lipgloss/v2/tree"
 	"github.com/charmbracelet/crush/internal/agent"
 	"github.com/charmbracelet/crush/internal/message"
-	"github.com/charmbracelet/crush/internal/ui/anim"
+	"github.com/charmbracelet/crush/internal/ui/spinner"
 	"github.com/charmbracelet/crush/internal/ui/styles"
 )
 
@@ -53,7 +53,7 @@ func NewAgentToolMessageItem(
 }
 
 // Animate progresses the message animation if it should be spinning.
-func (a *AgentToolMessageItem) Animate(msg anim.StepMsg) tea.Cmd {
+func (a *AgentToolMessageItem) Animate(msg spinner.StepMsg) tea.Cmd {
 	if a.result != nil || a.Status() == ToolStatusCanceled {
 		return nil
 	}

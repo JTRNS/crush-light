@@ -5,18 +5,18 @@ import (
 	"testing"
 
 	tea "charm.land/bubbletea/v2"
-	"github.com/charmbracelet/crush/internal/ui/anim"
+	"github.com/charmbracelet/crush/internal/ui/spinner"
 	"github.com/stretchr/testify/require"
 )
 
 func TestNewSpinner(t *testing.T) {
 	t.Parallel()
 
-	spinner := NewSpinner(context.Background(), func() {}, anim.Settings{ID: "spinner-test"})
+	s := NewSpinner(context.Background(), func() {}, spinner.Settings{ID: "spinner-test"})
 
-	require.NotNil(t, spinner)
-	require.NotNil(t, spinner.prog)
-	require.NotNil(t, spinner.done)
+	require.NotNil(t, s)
+	require.NotNil(t, s.prog)
+	require.NotNil(t, s.done)
 }
 
 func TestModelUpdate_QuitKeysCancelAndQuit(t *testing.T) {
@@ -34,8 +34,8 @@ func TestModelUpdate_QuitKeysCancelAndQuit(t *testing.T) {
 
 			cancelled := false
 			m := model{
-				cancel: func() { cancelled = true },
-				anim:   anim.New(anim.Settings{ID: "spinner-test"}),
+				cancel:  func() { cancelled = true },
+				spinner: spinner.New(spinner.Settings{ID: "spinner-test"}),
 			}
 
 			updated, cmd := m.Update(tc.key)
@@ -53,8 +53,8 @@ func TestModelUpdate_NonQuitKeyDoesNothing(t *testing.T) {
 
 	cancelled := false
 	m := model{
-		cancel: func() { cancelled = true },
-		anim:   anim.New(anim.Settings{ID: "spinner-test"}),
+		cancel:  func() { cancelled = true },
+		spinner: spinner.New(spinner.Settings{ID: "spinner-test"}),
 	}
 
 	updated, cmd := m.Update(tea.KeyPressMsg{Code: 'a', Text: "a"})

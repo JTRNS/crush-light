@@ -1,5 +1,5 @@
-// Package anim provides an animated spinner.
-package anim
+// Package spinner provides an animated spinner.
+package spinner
 
 import (
 	"fmt"
@@ -63,8 +63,8 @@ func nextID() int {
 	return int(lastID.Add(1))
 }
 
-// Cache for expensive animation calculations
-type animCache struct {
+// Cache for expensive animation calculations.
+type spinnerCache struct {
 	initialFrames  [][]string
 	cyclingFrames  [][]string
 	width          int
@@ -73,7 +73,7 @@ type animCache struct {
 	ellipsisFrames []string
 }
 
-var animCacheMap = csync.NewMap[string, *animCache]()
+var spinnerCacheMap = csync.NewMap[string, *spinnerCache]()
 
 // settingsHash creates a hash key for the settings to use for caching
 func settingsHash(opts Settings) string {
@@ -146,7 +146,7 @@ func New(opts Settings) *Anim {
 
 	// Check cache first
 	cacheKey := settingsHash(opts)
-	cached, exists := animCacheMap.Get(cacheKey)
+	cached, exists := spinnerCacheMap.Get(cacheKey)
 
 	if exists {
 		// Use cached values
@@ -238,7 +238,7 @@ func New(opts Settings) *Anim {
 		for i, v := range a.ellipsisFrames.Seq2() {
 			ellipsisSlice[i] = v
 		}
-		cached = &animCache{
+		cached = &spinnerCache{
 			initialFrames:  a.initialFrames,
 			cyclingFrames:  a.cyclingFrames,
 			width:          a.width,
@@ -246,7 +246,7 @@ func New(opts Settings) *Anim {
 			label:          labelSlice,
 			ellipsisFrames: ellipsisSlice,
 		}
-		animCacheMap.Set(cacheKey, cached)
+		spinnerCacheMap.Set(cacheKey, cached)
 	}
 
 	// Random assign a birth to each character for a stagged entrance effect.

@@ -15,8 +15,8 @@ import (
 	"github.com/charmbracelet/crush/internal/fsext"
 	"github.com/charmbracelet/crush/internal/message"
 	"github.com/charmbracelet/crush/internal/stringext"
-	"github.com/charmbracelet/crush/internal/ui/anim"
 	"github.com/charmbracelet/crush/internal/ui/common"
+	"github.com/charmbracelet/crush/internal/ui/spinner"
 	"github.com/charmbracelet/crush/internal/ui/styles"
 	"github.com/charmbracelet/x/ansi"
 )
@@ -90,7 +90,7 @@ func (d *DefaultToolRenderContext) RenderTool(sty *styles.Styles, width int, opt
 type ToolRenderOpts struct {
 	ToolCall        message.ToolCall
 	Result          *message.ToolResult
-	Anim            *anim.Anim
+	Anim            *spinner.Anim
 	ExpandedContent bool
 	Compact         bool
 	IsSpinning      bool
@@ -152,7 +152,7 @@ type baseToolMessageItem struct {
 	spinningFunc SpinningFunc
 
 	sty             *styles.Styles
-	anim            *anim.Anim
+	anim            *spinner.Anim
 	expandedContent bool
 }
 
@@ -185,7 +185,7 @@ func newBaseToolMessageItem(
 		status:                   status,
 		hasCappedWidth:           hasCappedWidth,
 	}
-	t.anim = anim.New(anim.Settings{
+	t.anim = spinner.New(spinner.Settings{
 		ID:          toolCall.ID,
 		Size:        15,
 		GradColorA:  sty.Primary,
@@ -276,7 +276,7 @@ func (t *baseToolMessageItem) StartAnimation() tea.Cmd {
 }
 
 // Animate progresses the assistant message animation if it should be spinning.
-func (t *baseToolMessageItem) Animate(msg anim.StepMsg) tea.Cmd {
+func (t *baseToolMessageItem) Animate(msg spinner.StepMsg) tea.Cmd {
 	if !t.isSpinning() {
 		return nil
 	}
@@ -415,7 +415,7 @@ func (t *baseToolMessageItem) HandleKeyEvent(key tea.KeyMsg) (bool, tea.Cmd) {
 }
 
 // pendingTool renders a tool that is still in progress with an animation.
-func pendingTool(sty *styles.Styles, name string, anim *anim.Anim, nested bool) string {
+func pendingTool(sty *styles.Styles, name string, anim *spinner.Anim, nested bool) string {
 	icon := sty.Tool.IconPending.Render()
 	nameStyle := sty.Tool.NameNormal
 	if nested {

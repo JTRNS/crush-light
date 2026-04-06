@@ -7,7 +7,7 @@ import (
 	"os"
 
 	tea "charm.land/bubbletea/v2"
-	"github.com/charmbracelet/crush/internal/ui/anim"
+	"github.com/charmbracelet/crush/internal/ui/spinner"
 	"github.com/charmbracelet/x/ansi"
 )
 
@@ -18,12 +18,12 @@ type Spinner struct {
 }
 
 type model struct {
-	cancel context.CancelFunc
-	anim   *anim.Anim
+	cancel  context.CancelFunc
+	spinner *spinner.Anim
 }
 
-func (m model) Init() tea.Cmd  { return m.anim.Start() }
-func (m model) View() tea.View { return tea.NewView(m.anim.Render()) }
+func (m model) Init() tea.Cmd  { return m.spinner.Start() }
+func (m model) View() tea.View { return tea.NewView(m.spinner.Render()) }
 
 // Update implements tea.Model.
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -34,18 +34,18 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.cancel()
 			return m, tea.Quit
 		}
-	case anim.StepMsg:
-		cmd := m.anim.Animate(msg)
+	case spinner.StepMsg:
+		cmd := m.spinner.Animate(msg)
 		return m, cmd
 	}
 	return m, nil
 }
 
 // NewSpinner creates a new spinner with the given message
-func NewSpinner(ctx context.Context, cancel context.CancelFunc, animSettings anim.Settings) *Spinner {
+func NewSpinner(ctx context.Context, cancel context.CancelFunc, spinnerSettings spinner.Settings) *Spinner {
 	m := model{
-		anim:   anim.New(animSettings),
-		cancel: cancel,
+		spinner: spinner.New(spinnerSettings),
+		cancel:  cancel,
 	}
 
 	p := tea.NewProgram(m, tea.WithOutput(os.Stderr), tea.WithContext(ctx))

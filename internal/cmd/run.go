@@ -18,7 +18,7 @@ import (
 	"github.com/charmbracelet/crush/internal/proto"
 	"github.com/charmbracelet/crush/internal/pubsub"
 	"github.com/charmbracelet/crush/internal/session"
-	"github.com/charmbracelet/crush/internal/ui/anim"
+	"github.com/charmbracelet/crush/internal/ui/spinner"
 	"github.com/charmbracelet/crush/internal/ui/styles"
 	"github.com/charmbracelet/crush/internal/workspace"
 	"github.com/charmbracelet/x/ansi"
@@ -173,7 +173,7 @@ func runNonInteractive(
 	}
 
 	var (
-		spinner   *format.Spinner
+		spin      *format.Spinner
 		stdoutTTY bool
 		stderrTTY bool
 		stdinTTY  bool
@@ -194,7 +194,7 @@ func runNonInteractive(
 		}
 		defaultFG := lipgloss.LightDark(hasDarkBG)(charmtone.Pepper, t.FgBase)
 
-		spinner = format.NewSpinner(ctx, cancel, anim.Settings{
+		spin = format.NewSpinner(ctx, cancel, spinner.Settings{
 			Size:        10,
 			Label:       "Generating",
 			LabelColor:  defaultFG,
@@ -202,13 +202,13 @@ func runNonInteractive(
 			GradColorB:  t.Secondary,
 			CycleColors: true,
 		})
-		spinner.Start()
+		spin.Start()
 	}
 
 	stopSpinner := func() {
-		if !hideSpinner && spinner != nil {
-			spinner.Stop()
-			spinner = nil
+		if !hideSpinner && spin != nil {
+			spin.Stop()
+			spin = nil
 		}
 	}
 
