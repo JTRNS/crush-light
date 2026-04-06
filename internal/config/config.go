@@ -200,6 +200,16 @@ type TUIOptions struct {
 
 	Completions Completions `json:"completions,omitzero" jsonschema:"description=Completions UI options"`
 	Transparent *bool       `json:"transparent,omitempty" jsonschema:"description=Enable transparent background for the TUI interface,default=false"`
+	Features    TUIFeatures `json:"features,omitzero" jsonschema:"description=Toggle visibility of advanced UI features"`
+}
+
+type TUIFeatures struct {
+	LSP *bool `json:"lsp,omitempty" jsonschema:"description=Show LSP-related UI sections and commands,default=true"`
+}
+
+// LSPEnabled reports whether LSP-related TUI features should be shown.
+func (t TUIOptions) LSPEnabled() bool {
+	return t.Features.LSP == nil || *t.Features.LSP
 }
 
 // Completions defines options for the completions UI.

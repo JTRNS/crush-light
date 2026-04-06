@@ -76,6 +76,7 @@ func Load(workingDir, dataDir string, debug bool) (*ConfigStore, error) {
 		slog.Warn("Detected Apple Terminal, enabling transparent mode")
 		assignIfNil(&cfg.Options.TUI.Transparent, true)
 	}
+	assignIfNil(&cfg.Options.TUI.Features.LSP, true)
 
 	// Load known providers, this loads the config from catwalk
 	providers, err := Providers(cfg)

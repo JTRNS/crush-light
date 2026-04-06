@@ -35,10 +35,12 @@ func (m *UI) landingView() string {
 
 	mcpLspSectionWidth := min(30, (width-1)/2)
 
-	lspSection := m.lspInfo(mcpLspSectionWidth, max(1, remainingHeightArea.Dy()), false)
 	mcpSection := m.mcpInfo(mcpLspSectionWidth, max(1, remainingHeightArea.Dy()), false)
-
-	content := lipgloss.JoinHorizontal(lipgloss.Left, lspSection, " ", mcpSection)
+	content := mcpSection
+	if m.com.Config().Options.TUI.LSPEnabled() {
+		lspSection := m.lspInfo(mcpLspSectionWidth, max(1, remainingHeightArea.Dy()), false)
+		content = lipgloss.JoinHorizontal(lipgloss.Left, lspSection, " ", mcpSection)
+	}
 
 	return lipgloss.NewStyle().
 		Width(width).

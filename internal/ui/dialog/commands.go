@@ -476,6 +476,12 @@ func (c *Commands) defaultCommands() []*CommandItem {
 		commands = append(commands, NewCommandItem(c.com.Styles, "open_external_editor", "Open External Editor", "ctrl+o", ActionExternalEditor{}))
 	}
 
+	lspToggleLabel := "Show LSP Features"
+	if cfg.Options.TUI.LSPEnabled() {
+		lspToggleLabel = "Hide LSP Features"
+	}
+	commands = append(commands, NewCommandItem(c.com.Styles, "toggle_lsp_features", lspToggleLabel, "", ActionToggleLSPFeature{}))
+
 	// Add Docker MCP command if available and not already enabled.
 	if !cfg.IsDockerMCPEnabled() && c.dockerMCPAvailable != nil && *c.dockerMCPAvailable {
 		commands = append(commands, NewCommandItem(c.com.Styles, "enable_docker_mcp", "Enable Docker MCP Catalog", "", ActionEnableDockerMCP{}))
