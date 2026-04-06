@@ -10,7 +10,7 @@ import (
 	"github.com/charmbracelet/crush/internal/ui/styles"
 )
 
-// MCPToolMessageItem is a message item that represents a bash tool call.
+// MCPToolMessageItem is a message item that represents an MCP tool call.
 type MCPToolMessageItem struct {
 	*baseToolMessageItem
 }
@@ -27,7 +27,7 @@ func NewMCPToolMessageItem(
 	return newBaseToolMessageItem(sty, toolCall, result, &MCPToolRenderContext{}, canceled)
 }
 
-// MCPToolRenderContext renders bash tool messages.
+// MCPToolRenderContext renders MCP tool messages.
 type MCPToolRenderContext struct{}
 
 // RenderTool implements the [ToolRenderer] interface.
@@ -96,26 +96,4 @@ func prettyName(name string) string {
 	name = strings.ReplaceAll(name, "_", " ")
 	name = strings.ReplaceAll(name, "-", " ")
 	return stringext.Capitalize(name)
-}
-
-// looksLikeMarkdown checks if content appears to be markdown by looking for
-// common markdown patterns.
-func looksLikeMarkdown(content string) bool {
-	patterns := []string{
-		"# ",  // headers
-		"## ", // headers
-		"**",  // bold
-		"```", // code fence
-		"- ",  // unordered list
-		"1. ", // ordered list
-		"> ",  // blockquote
-		"---", // horizontal rule
-		"***", // horizontal rule
-	}
-	for _, p := range patterns {
-		if strings.Contains(content, p) {
-			return true
-		}
-	}
-	return false
 }

@@ -9,10 +9,6 @@ import (
 	"github.com/charmbracelet/crush/internal/ui/styles"
 )
 
-// -----------------------------------------------------------------------------
-// Diagnostics Tool
-// -----------------------------------------------------------------------------
-
 // DiagnosticsToolMessageItem is a message item that represents a diagnostics tool call.
 type DiagnosticsToolMessageItem struct {
 	*baseToolMessageItem
