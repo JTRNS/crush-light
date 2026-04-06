@@ -91,6 +91,7 @@ const (
 	uiFocusNone uiFocusState = iota
 	uiFocusEditor
 	uiFocusMain
+	uiFocusSessions
 )
 
 type uiState uint8
@@ -203,7 +204,8 @@ type UI struct {
 	completionsPositionStart image.Point // x,y where user typed '@'
 
 	// Chat components
-	chat *Chat
+	chat            *Chat
+	landingSessions *landingSessions
 
 	// onboarding state
 	onboarding struct {
@@ -299,6 +301,7 @@ func New(com *common.Common, initialSessionID string, continueLast bool) *UI {
 		keyMap:              keyMap,
 		textarea:            ta,
 		chat:                ch,
+		landingSessions:     newLandingSessions(com),
 		header:              header,
 		completions:         comp,
 		attachments:         attachments,
@@ -360,6 +363,10 @@ func (m *UI) Init() tea.Cmd {
 	if cmd := m.loadInitialSession(); cmd != nil {
 		cmds = append(cmds, cmd)
 	}
+	// populate landing sessions list if we're starting on the landing screen
+	if m.state == uiLanding {
+		cmds = append(cmds, m.loadLandingSessions())
+	}
 	return tea.Batch(cmds...)
 }
 
@@ -381,6 +388,17 @@ func (m *UI) loadInitialSession() tea.Cmd {
 		}
 	default:
 		return nil
+	}
+}
+
+// loadLandingSessions fetches all sessions and populates the landing view list.
+func (m *UI) loadLandingSessions() tea.Cmd {
+	return func() tea.Msg {
+		sessions, err := m.com.Workspace.ListSessions(context.Background())
+		if err != nil {
+			return nil
+		}
+		return landingSessionsLoadedMsg{sessions: sessions}
 	}
 }
 
@@ -477,6 +495,12 @@ func (m *UI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if cmd := m.handleAgentNotification(msg.Payload); cmd != nil {
 			cmds = append(cmds, cmd)
 		}
+	case landingSessionsLoadedMsg:
+		m.landingSessions.SetSessions(msg.sessions)
+
+	case selectSessionMsg:
+		cmds = append(cmds, m.loadSession(msg.sessionID))
+
 	case loadSessionMsg:
 		if m.forceCompactMode {
 			m.isCompact = true
@@ -1764,7 +1788,13 @@ func (m *UI) handleKeyPressMsg(msg tea.KeyPressMsg) tea.Cmd {
 					cmds = append(cmds, cmd)
 				}
 			case key.Matches(msg, m.keyMap.Tab):
-				if m.state != uiLanding {
+				if m.state == uiLanding {
+					if m.landingSessions.Len() > 0 {
+						m.focus = uiFocusSessions
+						m.textarea.Blur()
+						m.landingSessions.Focus()
+					}
+				} else {
 					m.setState(m.state, uiFocusMain)
 					m.textarea.Blur()
 					m.chat.Focus()
@@ -1944,6 +1974,18 @@ func (m *UI) handleKeyPressMsg(msg tea.KeyPressMsg) tea.Cmd {
 					cmds = append(cmds, cmd)
 				} else {
 					handleGlobalKeys(msg)
+				}
+			}
+		case uiFocusSessions:
+			switch {
+			case key.Matches(msg, m.keyMap.Tab):
+				// Tab returns focus to the editor.
+				m.focus = uiFocusEditor
+				m.landingSessions.Blur()
+				cmds = append(cmds, m.textarea.Focus())
+			default:
+				if cmd := m.landingSessions.Update(msg); cmd != nil {
+					cmds = append(cmds, cmd)
 				}
 			}
 		default:
@@ -2179,6 +2221,20 @@ func (m *UI) ShortHelp() []key.Binding {
 				binds = append(binds, k.Chat.PillLeft)
 			}
 		}
+	case uiLanding:
+		switch m.focus {
+		case uiFocusEditor:
+			if m.landingSessions.Len() > 0 {
+				tab.SetHelp("tab", "focus sessions")
+				binds = append(binds, tab)
+			}
+		case uiFocusSessions:
+			tab.SetHelp("tab", "focus editor")
+			resume := key.NewBinding(key.WithKeys("enter"), key.WithHelp("enter", "resume"))
+			updown := key.NewBinding(key.WithKeys("up", "down"), key.WithHelp("↑↓", "choose"))
+			binds = append(binds, tab, updown, resume)
+		}
+		binds = append(binds, commands)
 	default:
 		// TODO: other states
 		// if m.session == nil {
@@ -3180,6 +3236,7 @@ func (m *UI) newSession() tea.Cmd {
 			return nil
 		},
 		m.loadPromptHistory(),
+		m.loadLandingSessions(),
 	)
 }
 

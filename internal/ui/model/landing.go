@@ -17,5 +17,5 @@ func (m *UI) selectedLargeModel() *workspace.AgentModel {
 // landingView renders the landing page main area. Context information
 // (working directory, model, LSP/MCP status) is shown in the sidebar.
 func (m *UI) landingView() string {
-	return ""
+	return m.landingSessions.View(m.layout.main.Dx(), m.layout.main.Dy())
 }

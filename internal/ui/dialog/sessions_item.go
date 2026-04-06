@@ -182,6 +182,12 @@ func (s *SessionItem) SetFocused(focused bool) {
 	s.focused = focused
 }
 
+// NewSessionItems creates session list items in normal (non-editing) display mode.
+// It is intended for use outside of the dialog package, e.g. the landing view.
+func NewSessionItems(t *styles.Styles, sessions ...session.Session) []list.FilterableItem {
+	return sessionItems(t, sessionsModeNormal, sessions...)
+}
+
 // sessionItems takes a slice of [session.Session]s and convert them to a slice
 // of [ListItem]s.
 func sessionItems(t *styles.Styles, mode sessionsMode, sessions ...session.Session) []list.FilterableItem {
