@@ -4,7 +4,7 @@ A **provider** is a configured connection to an LLM API service. Each provider h
 
 ## Provider types
 
-Provider types are defined by the `catwalk` library and determine the API protocol:
+Provider types determine the API protocol used to communicate with the service. The protocol translation is handled by the `fantasy` library (`charm.land/fantasy`), which the [agent](./agents.md) runtime uses to stream completions:
 
 | Type | Service | Notes |
 |------|---------|-------|
@@ -16,8 +16,6 @@ Provider types are defined by the `catwalk` library and determine the API protoc
 | `bedrock` | AWS Bedrock | Anthropic models via AWS. Requires AWS credentials. |
 | `vertexai` | Google Vertex AI | Gemini models via GCP. Requires `VERTEXAI_PROJECT` and `VERTEXAI_LOCATION`. |
 | `openrouter` | OpenRouter | Proxy service routing to multiple upstream providers. |
-
-The protocol translation is handled by the `fantasy` library (`charm.land/fantasy`), which the [agent](./agents.md) runtime uses to stream completions.
 
 ## Configuration
 
