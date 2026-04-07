@@ -398,10 +398,11 @@ func (c *Completions) Render() string {
 func loadFiles(workingDir string, depth, limit int) []FileCompletionValue {
 	files, _, _ := fsext.ListDirectory(workingDir, nil, depth, limit)
 	slices.Sort(files)
+	prefix := filepath.Clean(workingDir) + string(filepath.Separator)
 	result := make([]FileCompletionValue, 0, len(files))
 	for _, file := range files {
 		result = append(result, FileCompletionValue{
-			Path: strings.TrimPrefix(file, workingDir+"/"),
+			Path: strings.TrimPrefix(file, prefix),
 		})
 	}
 	return result
