@@ -11,7 +11,6 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	"github.com/charmbracelet/crush/internal/diff"
-	"github.com/charmbracelet/crush/internal/fsext"
 	"github.com/charmbracelet/crush/internal/history"
 	"github.com/charmbracelet/crush/internal/session"
 	"github.com/charmbracelet/crush/internal/ui/common"
@@ -176,7 +175,7 @@ func (m *UI) filesInfo(cwd string, width, maxItems int, isSection bool) string {
 		filesWithChanges = append(filesWithChanges, f)
 	}
 	if len(filesWithChanges) > 0 {
-		list = fileList(t, cwd, filesWithChanges, width, maxItems)
+		list = fileList(t, filesWithChanges, width, maxItems)
 	}
 
 	return lipgloss.NewStyle().Width(width).Render(fmt.Sprintf("%s\n\n%s", title, list))
@@ -184,7 +183,7 @@ func (m *UI) filesInfo(cwd string, width, maxItems int, isSection bool) string {
 
 // fileList renders a list of files with their diff statistics, truncating to
 // maxItems and showing a "...and N more" message if needed.
-func fileList(t *styles.Styles, cwd string, filesWithChanges []SessionFile, width, maxItems int) string {
+func fileList(t *styles.Styles, filesWithChanges []SessionFile, width, maxItems int) string {
 	if maxItems <= 0 {
 		return ""
 	}
@@ -207,15 +206,10 @@ func fileList(t *styles.Styles, cwd string, filesWithChanges []SessionFile, widt
 		}
 		extraContent := strings.Join(statusParts, " ")
 
-		// Format file path
-		filePath := f.FirstVersion.Path
-		if rel, err := filepath.Rel(cwd, filePath); err == nil {
-			filePath = rel
-		}
-		filePath = fsext.DirTrim(filePath, 2)
-		filePath = ansi.Truncate(filePath, width-(lipgloss.Width(extraContent)-2), "…")
+		fileName := filepath.Base(f.FirstVersion.Path)
+		fileName = ansi.Truncate(fileName, width-(lipgloss.Width(extraContent)-2), "…")
 
-		line := t.Files.Path.Render(filePath)
+		line := t.Files.Path.Render(fileName)
 		if extraContent != "" {
 			line = fmt.Sprintf("%s %s", line, extraContent)
 		}
