@@ -132,12 +132,12 @@ func (c *Completions) KeyMap() KeyMap {
 }
 
 // Open opens the completions with file items from the filesystem.
-func (c *Completions) Open(depth, limit int) tea.Cmd {
+func (c *Completions) Open(workingDir string, depth, limit int) tea.Cmd {
 	return func() tea.Msg {
 		var msg CompletionItemsLoadedMsg
 		var wg sync.WaitGroup
 		wg.Go(func() {
-			msg.Files = loadFiles(depth, limit)
+			msg.Files = loadFiles(workingDir, depth, limit)
 		})
 		wg.Go(func() {
 			msg.Resources = loadMCPResources()
@@ -395,13 +395,13 @@ func (c *Completions) Render() string {
 	return c.list.List.Render()
 }
 
-func loadFiles(depth, limit int) []FileCompletionValue {
-	files, _, _ := fsext.ListDirectory(".", nil, depth, limit)
+func loadFiles(workingDir string, depth, limit int) []FileCompletionValue {
+	files, _, _ := fsext.ListDirectory(workingDir, nil, depth, limit)
 	slices.Sort(files)
 	result := make([]FileCompletionValue, 0, len(files))
 	for _, file := range files {
 		result = append(result, FileCompletionValue{
-			Path: strings.TrimPrefix(file, "./"),
+			Path: strings.TrimPrefix(file, workingDir+"/"),
 		})
 	}
 	return result

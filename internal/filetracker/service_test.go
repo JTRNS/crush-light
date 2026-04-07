@@ -19,7 +19,8 @@ type testEnv struct {
 func setupTest(t *testing.T) *testEnv {
 	t.Helper()
 
-	conn, err := db.Connect(t.Context(), t.TempDir())
+	tmpDir := t.TempDir()
+	conn, err := db.Connect(t.Context(), tmpDir)
 	require.NoError(t, err)
 	t.Cleanup(func() { conn.Close() })
 
@@ -27,7 +28,7 @@ func setupTest(t *testing.T) *testEnv {
 	return &testEnv{
 		ctx: t.Context(),
 		q:   q,
-		svc: NewService(q),
+		svc: NewService(q, tmpDir),
 	}
 }
 

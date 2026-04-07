@@ -91,7 +91,7 @@ func New(ctx context.Context, conn *sql.DB, store *config.ConfigStore) (*App, er
 		Messages:    messages,
 		History:     files,
 		Permissions: permission.NewPermissionService(store.WorkingDir(), true, allowedTools),
-		FileTracker: filetracker.NewService(q),
+		FileTracker: filetracker.NewService(q, store.WorkingDir()),
 		LSPManager:  lsp.NewManager(store),
 
 		globalCtx: ctx,

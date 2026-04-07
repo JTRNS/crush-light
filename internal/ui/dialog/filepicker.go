@@ -128,12 +128,7 @@ func (f *FilePicker) WorkingDir() string {
 		return wd
 	}
 
-	cwd, err := os.Getwd()
-	if err != nil {
-		return home.Dir()
-	}
-
-	return cwd
+	return home.Dir()
 }
 
 // ShortHelp returns the short help key bindings for the [FilePicker] dialog.

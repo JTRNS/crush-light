@@ -15,6 +15,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"os"
 	"slices"
 	"strings"
@@ -74,7 +75,12 @@ func NewShell(opts *Options) *Shell {
 
 	cwd := opts.WorkingDir
 	if cwd == "" {
-		cwd, _ = os.Getwd()
+		var err error
+		cwd, err = os.Getwd()
+		if err != nil {
+			slog.Warn("Failed to get working directory for shell, defaulting to /", "error", err)
+			cwd = "/"
+		}
 	}
 
 	env := opts.Env

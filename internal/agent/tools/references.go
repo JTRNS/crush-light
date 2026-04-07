@@ -33,7 +33,7 @@ const ReferencesToolName = "lsp_references"
 //go:embed references.md
 var referencesDescription []byte
 
-func NewReferencesTool(lspManager *lsp.Manager) fantasy.AgentTool {
+func NewReferencesTool(lspManager *lsp.Manager, workingDir string) fantasy.AgentTool {
 	return fantasy.NewAgentTool(
 		ReferencesToolName,
 		string(referencesDescription),
@@ -46,9 +46,9 @@ func NewReferencesTool(lspManager *lsp.Manager) fantasy.AgentTool {
 				return fantasy.NewTextErrorResponse("no LSP clients available"), nil
 			}
 
-			workingDir := cmp.Or(params.Path, ".")
+			searchDir := cmp.Or(params.Path, workingDir)
 
-			matches, _, err := searchFiles(ctx, regexp.QuoteMeta(params.Symbol), workingDir, "", 100)
+			matches, _, err := searchFiles(ctx, regexp.QuoteMeta(params.Symbol), searchDir, "", 100)
 			if err != nil {
 				return fantasy.NewTextErrorResponse(fmt.Sprintf("failed to search for symbol: %s", err)), nil
 			}
